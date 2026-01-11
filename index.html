@@ -13,7 +13,7 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0f0f0f;
+            background: #000000;
             color: #fff;
             padding: 20px;
         }
@@ -471,143 +471,207 @@
 
     <script>
         // ============================================
-        // ADD YOUR VIDEOS IN SECTIONS
+        // LOAD VIDEO DATA FROM JSON FILE
         // ============================================
         
-        const section1Videos = [
-            {
-                title: "Baroochs Boots",
-                url: "https://archive.org/download/baroochs-boots/BaroochsBoots.mp4",
-                thumbnail: "thumbnails/Screenshot 2024-10-17 123844-Photoroom.png",
-                duration: "10:23",
-                videoId: "s1v1",
-                description: "Add your video description here"
-            },
-            {
-                title: "Music Video 2",
-                url: "YOUR_INTERNET_ARCHIVE_VIDEO_URL_2",
-                thumbnail: "thumbnails/section1-video2.jpg",
-                duration: "8:45",
-                videoId: "s1v2",
-                description: "Add your video description here"
-            },
-            {
-                title: "Music Video 3",
-                url: "YOUR_INTERNET_ARCHIVE_VIDEO_URL_3",
-                thumbnail: "thumbnails/section1-video3.jpg",
-                duration: "7:30",
-                videoId: "s1v3",
-                description: "Add your video description here"
-            },
-            {
-                title: "Music Video 4",
-                url: "YOUR_INTERNET_ARCHIVE_VIDEO_URL_4",
-                thumbnail: "thumbnails/section1-video4.jpg",
-                duration: "9:15",
-                videoId: "s1v4",
-                description: "Add your video description here"
-            },
-            {
-                title: "Music Video 5",
-                url: "YOUR_INTERNET_ARCHIVE_VIDEO_URL_5",
-                thumbnail: "thumbnails/section1-video5.jpg",
-                duration: "6:50",
-                videoId: "s1v5",
-                description: "Add your video description here"
-            },
-            {
-                title: "Music Video 6",
-                url: "YOUR_INTERNET_ARCHIVE_VIDEO_URL_6",
-                thumbnail: "thumbnails/section1-video6.jpg",
-                duration: "8:20",
-                videoId: "s1v6",
-                description: "Add your video description here"
-            }
-        ];
-
-        const section2Videos = [
-            {
-                title: "Duchbes Humane Video",
-                url: "YOUR_INTERNET_ARCHIVE_VIDEO_URL_7",
-                thumbnail: "thumbnails/section2-video1.jpg",
-                duration: "12:10",
-                videoId: "s2v1",
-                description: "Add your video description here"
-            }
-        ];
-
-        const section3Videos = [
-            {
-                title: "Duchbes 13 - Video 1",
-                url: "YOUR_INTERNET_ARCHIVE_VIDEO_URL_8",
-                thumbnail: "thumbnails/section3-video1.jpg",
-                duration: "9:15",
-                videoId: "s3v1",
-                description: "Add your video description here"
-            },
-            {
-                title: "Duchbes 13 - Video 2",
-                url: "YOUR_INTERNET_ARCHIVE_VIDEO_URL_9",
-                thumbnail: "thumbnails/section3-video2.jpg",
-                duration: "11:50",
-                videoId: "s3v2",
-                description: "Add your video description here"
-            }
-        ];
-
-        // Combine all videos for easy reference
-        const allVideos = [...section1Videos, ...section3Videos, ...section2Videos];
-
-        // ============================================
-        // PLAYLISTS - AUTO-UPDATE WHEN YOU ADD VIDEOS
-        // ============================================
-        
-        const playlists = {
-            section1: {
-                name: "Music Videos",
-                description: `${section1Videos.length} videos`,
-                thumbnail: "thumbnails/playlist-section1.jpg",
-                getVideos: () => {
-                    const startIndex = 0;
-                    return section1Videos.map((v, i) => startIndex + i);
+        // Default video data (used if videos.json can't be loaded)
+        const defaultVideoData = {
+            "musicVideos": [
+                {
+                    "title": "Baroochs Boots",
+                    "url": "https://archive.org/download/baroochs-boots/BaroochsBoots.mp4",
+                    "thumbnail": "thumbnails/Screenshot 2024-10-17 123844-Photoroom.png",
+                    "duration": "10:23",
+                    "videoId": "s1v1",
+                    "description": "Add your video description here"
+                },
+                {
+                    "title": "Music Video 2",
+                    "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_2",
+                    "thumbnail": "thumbnails/section1-video2.jpg",
+                    "duration": "8:45",
+                    "videoId": "s1v2",
+                    "description": "Add your video description here"
+                },
+                {
+                    "title": "Music Video 3",
+                    "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_3",
+                    "thumbnail": "thumbnails/section1-video3.jpg",
+                    "duration": "7:30",
+                    "videoId": "s1v3",
+                    "description": "Add your video description here"
+                },
+                {
+                    "title": "Music Video 4",
+                    "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_4",
+                    "thumbnail": "thumbnails/section1-video4.jpg",
+                    "duration": "9:15",
+                    "videoId": "s1v4",
+                    "description": "Add your video description here"
+                },
+                {
+                    "title": "Music Video 5",
+                    "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_5",
+                    "thumbnail": "thumbnails/section1-video5.jpg",
+                    "duration": "6:50",
+                    "videoId": "s1v5",
+                    "description": "Add your video description here"
+                },
+                {
+                    "title": "Music Video 6",
+                    "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_6",
+                    "thumbnail": "thumbnails/section1-video6.jpg",
+                    "duration": "8:20",
+                    "videoId": "s1v6",
+                    "description": "Add your video description here"
                 }
-            },
-            section3: {
-                name: "Duchbes 13",
-                description: `${section3Videos.length} videos`,
-                thumbnail: "thumbnails/playlist-section3.jpg",
-                getVideos: () => {
-                    const startIndex = section1Videos.length;
-                    return section3Videos.map((v, i) => startIndex + i);
+            ],
+            "duchbesHumane": [
+                {
+                    "title": "Duchbes Humane Video",
+                    "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_7",
+                    "thumbnail": "thumbnails/section2-video1.jpg",
+                    "duration": "12:10",
+                    "videoId": "s2v1",
+                    "description": "Add your video description here"
                 }
-            },
-            section2: {
-                name: "Duchbes Humane",
-                description: `${section2Videos.length} videos`,
-                thumbnail: "thumbnails/playlist-section2.jpg",
-                getVideos: () => {
-                    const startIndex = section1Videos.length + section3Videos.length;
-                    return section2Videos.map((v, i) => startIndex + i);
+            ],
+            "duchbes13": [
+                {
+                    "title": "Duchbes 13 - Video 1",
+                    "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_8",
+                    "thumbnail": "thumbnails/section3-video1.jpg",
+                    "duration": "9:15",
+                    "videoId": "s3v1",
+                    "description": "Add your video description here"
+                },
+                {
+                    "title": "Duchbes 13 - Video 2",
+                    "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_9",
+                    "thumbnail": "thumbnails/section3-video2.jpg",
+                    "duration": "11:50",
+                    "videoId": "s3v2",
+                    "description": "Add your video description here"
                 }
-            },
-            sections12: {
-                name: "Music Videos & Duchbes 13",
-                description: `${section1Videos.length + section3Videos.length} videos`,
-                thumbnail: "thumbnails/playlist-sections12.jpg",
-                getVideos: () => {
-                    const combined = [...section1Videos, ...section3Videos];
-                    return combined.map((v, i) => i);
-                }
-            },
-            all: {
-                name: "All Videos",
-                description: `${allVideos.length} videos`,
-                thumbnail: "thumbnails/playlist-all.jpg",
-                getVideos: () => {
-                    return allVideos.map((v, i) => i);
-                }
-            }
+            ]
         };
+        
+        let section1Videos = [];
+        let section2Videos = [];
+        let section3Videos = [];
+        let allVideos = [];
+        
+        // Fetch video data from videos.json
+        async function loadVideoData() {
+            try {
+                const response = await fetch('videos.json');
+                if (!response.ok) throw new Error('videos.json not found');
+                const data = await response.json();
+                
+                section1Videos = data.musicVideos || [];
+                section2Videos = data.duchbesHumane || [];
+                section3Videos = data.duchbes13 || [];
+                
+                // Combine all videos for easy reference
+                allVideos = [...section1Videos, ...section3Videos, ...section2Videos];
+                
+                // Initialize the page after loading data
+                initializePage();
+            } catch (error) {
+                console.warn('Could not load videos.json, using default data:', error);
+                // Use default data if JSON file can't be loaded
+                section1Videos = defaultVideoData.musicVideos;
+                section2Videos = defaultVideoData.duchbesHumane;
+                section3Videos = defaultVideoData.duchbes13;
+                allVideos = [...section1Videos, ...section3Videos, ...section2Videos];
+                initializePage();
+            }
+        }
+        
+        function initializePage() {
+            buildPlaylists();
+            buildVideoGrid(section1Videos, section1Grid, 0);
+            buildVideoGrid(section3Videos, section3Grid, section1Videos.length);
+            buildVideoGrid(section2Videos, section2Grid, section1Videos.length + section3Videos.length);
+        }
+        
+        // Build playlists dynamically
+        function buildPlaylists() {
+            const playlists = {
+                section1: {
+                    name: "Music Videos",
+                    description: `${section1Videos.length} videos`,
+                    thumbnail: "thumbnails/playlist-section1.jpg",
+                    getVideos: () => {
+                        const startIndex = 0;
+                        return section1Videos.map((v, i) => startIndex + i);
+                    }
+                },
+                section3: {
+                    name: "Duchbes 13",
+                    description: `${section3Videos.length} videos`,
+                    thumbnail: "thumbnails/playlist-section3.jpg",
+                    getVideos: () => {
+                        const startIndex = section1Videos.length;
+                        return section3Videos.map((v, i) => startIndex + i);
+                    }
+                },
+                section2: {
+                    name: "Duchbes Humane",
+                    description: `${section2Videos.length} videos`,
+                    thumbnail: "thumbnails/playlist-section2.jpg",
+                    getVideos: () => {
+                        const startIndex = section1Videos.length + section3Videos.length;
+                        return section2Videos.map((v, i) => startIndex + i);
+                    }
+                },
+                sections12: {
+                    name: "Music Videos & Duchbes 13",
+                    description: `${section1Videos.length + section3Videos.length} videos`,
+                    thumbnail: "thumbnails/playlist-sections12.jpg",
+                    getVideos: () => {
+                        const combined = [...section1Videos, ...section3Videos];
+                        return combined.map((v, i) => i);
+                    }
+                },
+                all: {
+                    name: "All Videos",
+                    description: `${allVideos.length} videos`,
+                    thumbnail: "thumbnails/playlist-all.jpg",
+                    getVideos: () => {
+                        return allVideos.map((v, i) => i);
+                    }
+                }
+            };
+            
+            // Build playlist grid
+            Object.keys(playlists).forEach(playlistKey => {
+                const playlist = playlists[playlistKey];
+                const card = document.createElement('div');
+                card.className = 'playlist-card';
+                card.onclick = () => playPlaylist(playlistKey, playlists);
+                
+                card.innerHTML = `
+                    <div class="thumbnail">
+                        <img src="${playlist.thumbnail}" alt="${playlist.name}">
+                        <div class="playlist-overlay">
+                            <svg class="playlist-icon-small" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/>
+                            </svg>
+                            ${playlist.getVideos().length}
+                        </div>
+                        <div class="play-button"></div>
+                    </div>
+                    <div class="playlist-title">${playlist.name}</div>
+                    <div class="playlist-subtitle">${playlist.description}</div>
+                `;
+                
+                playlistGrid.appendChild(card);
+            });
+            
+            // Store playlists globally for playPlaylist function
+            window.currentPlaylists = playlists;
+        }
 
         // IMPORTANT: Change this to something unique to your site!
         const namespace = 'hellmish-productions-gallery';  // Change to 'yourname2024' or similar
@@ -630,30 +694,8 @@
         const shareLinkPopup = document.getElementById('shareLinkPopup');
         const shareLinkInput = document.getElementById('shareLinkInput');
 
-        // Build playlist grid
-        Object.keys(playlists).forEach(playlistKey => {
-            const playlist = playlists[playlistKey];
-            const card = document.createElement('div');
-            card.className = 'playlist-card';
-            card.onclick = () => playPlaylist(playlistKey);
-            
-            card.innerHTML = `
-                <div class="thumbnail">
-                    <img src="${playlist.thumbnail}" alt="${playlist.name}">
-                    <div class="playlist-overlay">
-                        <svg class="playlist-icon-small" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/>
-                        </svg>
-                        ${playlist.getVideos().length}
-                    </div>
-                    <div class="play-button"></div>
-                </div>
-                <div class="playlist-title">${playlist.name}</div>
-                <div class="playlist-subtitle">${playlist.description}</div>
-            `;
-            
-            playlistGrid.appendChild(card);
-        });
+        // Load video data on page load
+        loadVideoData();
 
         // Build section grids
         function buildVideoGrid(videos, grid, startIndex) {
@@ -737,13 +779,14 @@
         window.addEventListener('load', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const playlistParam = urlParams.get('playlist');
-            if (playlistParam && playlists[playlistParam]) {
-                playPlaylist(playlistParam);
+            if (playlistParam && window.currentPlaylists && window.currentPlaylists[playlistParam]) {
+                playPlaylist(playlistParam, window.currentPlaylists);
             }
         });
 
-        function playPlaylist(playlistName) {
-            const playlist = playlists[playlistName];
+        function playPlaylist(playlistName, playlists) {
+            const playlistsToUse = playlists || window.currentPlaylists;
+            const playlist = playlistsToUse[playlistName];
             if (!playlist) return;
             
             currentPlaylist = playlist.getVideos();
