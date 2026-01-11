@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Gallery</title>
     <link rel="icon" type="image/jpeg" href="img/batman-icon.jpg">
+    
+    <!-- GoatCounter Analytics -->
+    <script data-goatcounter="https://hellmish-productions.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+    
     <style>
         @font-face {
             font-family: 'Batman Forever';
@@ -169,26 +174,6 @@
             font-size: 16px;
             font-weight: 500;
             line-height: 1.4;
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            gap: 8px;
-        }
-
-        .video-views {
-            font-size: 13px;
-            color: #aaa;
-            font-weight: normal;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .eye-icon {
-            width: 16px;
-            height: 16px;
-            fill: #aaa;
         }
 
         .video-description {
@@ -654,7 +639,6 @@
                 card.className = 'video-card';
                 card.onclick = () => openVideo(startIndex + index, false);
                 
-                const viewsId = `views-${video.videoId}`;
                 const durationId = `duration-${video.videoId}`;
                 
                 card.innerHTML = `
@@ -663,22 +647,11 @@
                         <div class="play-button"></div>
                         <div class="video-duration" id="${durationId}">${video.duration || 'Loading...'}</div>
                     </div>
-                    <div class="video-title">
-                        <span>${video.title}</span>
-                        <span class="video-views" id="${viewsId}">
-                            <svg class="eye-icon" viewBox="0 0 24 24">
-                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                            </svg>
-                            <span>...</span>
-                        </span>
-                    </div>
+                    <div class="video-title">${video.title}</div>
                     <div class="video-description">${video.description}</div>
                 `;
                 
                 grid.appendChild(card);
-                
-                // Fetch view count for this video
-                fetchViewCount(video.videoId, viewsId);
                 
                 // Get duration from video file if not provided
                 if (!video.duration) {
@@ -717,44 +690,62 @@
             video.src = videoUrl;
         }
 
-        // Fetch view count from CountAPI
+        // Fetch view count from GoatCounter API
         async function fetchViewCount(videoId, elementId) {
             try {
-                const response = await fetch(`https://api.countapi.xyz/get/${namespace}/${videoId}`);
+                // GoatCounter API endpoint
+                const response = await fetch(`https://hellmish-productions.goatcounter.com/api/v0/stats/total?path=/video/${videoId}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                
                 const data = await response.json();
-                const viewCount = data.value || 0;
+                const viewCount = data.count || 0;
                 
                 const element = document.getElementById(elementId);
                 if (element) {
-                    element.innerHTML = formatViews(viewCount);
+                    const eyeIcon = `<svg class="eye-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+                    element.innerHTML = `${eyeIcon}<span>${formatViewsNumber(viewCount)}</span>`;
                 }
             } catch (error) {
-                console.error('Error fetching views:', error);
+                console.log('View count not available yet:', error);
                 const element = document.getElementById(elementId);
                 if (element) {
                     const eyeIcon = `<svg class="eye-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-                    element.innerHTML = `${eyeIcon}<span>0</span>`;
+                    element.innerHTML = `${eyeIcon}<span>--</span>`;
                 }
             }
         }
 
         // Increment view count when video is played
-        async function incrementViewCount(videoId) {
-            try {
-                await fetch(`https://api.countapi.xyz/hit/${namespace}/${videoId}`);
-            } catch (error) {
-                console.error('Error incrementing views:', error);
+        function incrementViewCount(videoId) {
+            // Track video view with GoatCounter
+            if (window.goatcounter) {
+                window.goatcounter.count({
+                    path: `/video/${videoId}`,
+                    title: allVideos.find(v => v.videoId === videoId)?.title || 'Video',
+                    event: true
+                });
             }
         }
 
         // Format view count nicely
+        function formatViewsNumber(count) {
+            if (count === 0) return '0';
+            if (count === 1) return '1';
+            if (count < 1000) return `${count}`;
+            if (count < 1000000) return `${(count / 1000).toFixed(1)}K`;
+            return `${(count / 1000000).toFixed(1)}M`;
+        }
+
         function formatViews(count) {
             const eyeIcon = `<svg class="eye-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-            if (count === 0) return `${eyeIcon}<span>0</span>`;
-            if (count === 1) return `${eyeIcon}<span>1</span>`;
-            if (count < 1000) return `${eyeIcon}<span>${count}</span>`;
-            if (count < 1000000) return `${eyeIcon}<span>${(count / 1000).toFixed(1)}K</span>`;
-            return `${eyeIcon}<span>${(count / 1000000).toFixed(1)}M</span>`;
+            return `${eyeIcon}<span>${formatViewsNumber(count)}</span>`;
         }
 
         buildVideoGrid(section1Videos, section1Grid, 0);
@@ -775,8 +766,14 @@
             videoPlayer.src = video.url;
             currentTitle.textContent = video.title;
             
-            // Increment view count when video is opened
-            incrementViewCount(video.videoId);
+            // Track video view with GoatCounter
+            if (window.goatcounter) {
+                window.goatcounter.count({
+                    path: `/video/${video.videoId}`,
+                    title: video.title,
+                    event: true
+                });
+            }
             
             if (isPlaylistMode) {
                 const position = currentPlaylist.indexOf(videoIndex) + 1;
