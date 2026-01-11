@@ -69,12 +69,12 @@
   ],
   "duchbesHumane": [
     {
-      "title": "Duchbes Humane Video",
-      "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_7",
-      "thumbnail": "thumbnails/section2-video1.jpg",
-      "duration": "12:10",
+      "title": "MacBatman",
+      "url": "https://www.dropbox.com/scl/fi/zcdzkg6brgsau8siso8ti/MacBatman.mp4?rlkey=j3q2tbzdmtq9qp0jzuffo3pwk&st=e69cyybm&dl=0",
+      "thumbnail": "thumbnails/tomster8521_background_--ar_9151_--v_7_ad2177e8-b7ee-4f72-a175-f9eb662d99a1_2.png",
+      "duration": "2:09",
       "videoId": "s3v1",
-      "description": "Add your video description here"
+      "description": "If you need a spy, an engineer, or both… he can turn a grappling hook into a flamethrower, the Batmobile into a popcorn maker, a batarang into a waffle iron, and a paperclip into a perfectly serviceable parachute - sometimes before breakfast."
     }
   ]
 }
