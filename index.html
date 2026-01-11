@@ -614,17 +614,11 @@
             if (videoId) {
                 const videoIndex = allVideos.findIndex(v => v.videoId === videoId);
                 if (videoIndex !== -1) {
-                    // Update page meta tags for sharing
+                    // Update page title
                     const video = allVideos[videoIndex];
                     document.title = video.title + ' - Hellmish Productions';
                     
-                    // Update or create Open Graph meta tags
-                    updateMetaTag('og:title', video.title);
-                    updateMetaTag('og:description', video.description);
-                    updateMetaTag('og:image', SITE_URL + '/' + video.thumbnail);
-                    updateMetaTag('og:url', window.location.href);
-                    
-                    // Optionally auto-play the video
+                    // Auto-play the video
                     setTimeout(() => openVideo(videoIndex, false), 500);
                 }
             }
@@ -872,16 +866,6 @@
                 }
             }
         });
-
-        function updateMetaTag(property, content) {
-            let meta = document.querySelector(`meta[property="${property}"]`);
-            if (!meta) {
-                meta = document.createElement('meta');
-                meta.setAttribute('property', property);
-                document.head.appendChild(meta);
-            }
-            meta.setAttribute('content', content);
-        }
     </script>
 </body>
 </html>
