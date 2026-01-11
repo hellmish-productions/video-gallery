@@ -787,7 +787,22 @@
             
             updateButtons();
             modal.classList.add('active');
+            
+            // Play video and immediately request fullscreen
             videoPlayer.play();
+            
+            // Small delay to ensure video is ready, then request fullscreen
+            setTimeout(() => {
+                if (videoPlayer.requestFullscreen) {
+                    videoPlayer.requestFullscreen();
+                } else if (videoPlayer.webkitRequestFullscreen) {
+                    videoPlayer.webkitRequestFullscreen();
+                } else if (videoPlayer.mozRequestFullScreen) {
+                    videoPlayer.mozRequestFullScreen();
+                } else if (videoPlayer.msRequestFullscreen) {
+                    videoPlayer.msRequestFullscreen();
+                }
+            }, 100);
         }
 
         function playNext() {
