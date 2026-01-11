@@ -6,10 +6,6 @@
     <title>Video Gallery</title>
     <link rel="icon" type="image/jpeg" href="img/batman-icon.jpg">
     
-    <!-- GoatCounter Analytics -->
-    <script data-goatcounter="https://hellmish-productions.goatcounter.com/count"
-            async src="//gc.zgo.at/count.js"></script>
-    
     <style>
         @font-face {
             font-family: 'Batman Forever';
@@ -32,7 +28,7 @@
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
         
@@ -48,14 +44,6 @@
             display: block;
         }
 
-        .flag-counter {
-            text-align: center;
-            margin: 20px 0 30px 0;
-            padding: 15px;
-            background: #1a1a1a;
-            border-radius: 12px;
-        }
-        
         h2 {
             margin: 30px 0 20px 0;
             font-size: 24px;
@@ -95,11 +83,10 @@
         
         .video-card, .playlist-card {
             cursor: pointer;
-            transition: transform 0.2s;
         }
         
-        .video-card:hover, .playlist-card:hover {
-            transform: scale(1.02);
+        .video-card:hover .thumbnail, .playlist-card:hover .thumbnail {
+            transform: scale(1.05);
         }
         
         .thumbnail {
@@ -109,6 +96,7 @@
             background: #272727;
             border-radius: 12px;
             overflow: hidden;
+            transition: transform 0.2s;
         }
         
         .thumbnail img {
@@ -381,6 +369,22 @@
         .playlists-section {
             margin-bottom: 30px;
         }
+
+        .version {
+            position: fixed;
+            bottom: 4px;
+            right: 4px;
+            font-size: 12px;
+            color: #666;
+            z-index: 9999;
+            font-family: monospace;
+        }
+
+        @media (max-width: 768px) {
+            .version {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -395,14 +399,9 @@
 
         <h2 id="section2Title" style="display: none;">Duchbes Humane</h2>
         <div class="video-grid" id="section2Grid"></div>
-
-        <!-- FLAG COUNTER -->
-        <div class="flag-counter">
-            <a href="https://www.flagcounter.com/more/0TR" target="_blank">
-                <img src="https://s01.flagcounter.com/count2/0TR/bg_000000/txt_FFFFFF/border_CCCCCC/columns_2/maxflags_10/viewers_0/labels_1/pageviews_0/flags_0/percent_0/" alt="Flag Counter" border="0">
-            </a>
-        </div>
     </div>
+
+    <div class="version">v1.0</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
