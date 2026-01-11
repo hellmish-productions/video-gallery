@@ -88,11 +88,11 @@
             }
         }
         
-        .video-card, .playlist-card {
+        .playlist-card {
             cursor: pointer;
         }
         
-        .video-card:hover .thumbnail, .playlist-card:hover .thumbnail {
+        .playlist-card:hover .thumbnail {
             transform: scale(1.05);
         }
         
@@ -104,6 +104,11 @@
             border-radius: 12px;
             overflow: hidden;
             transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .thumbnail:hover {
+            transform: scale(1.05);
         }
         
         .thumbnail img {
@@ -483,119 +488,171 @@
 
     <script>
         // ============================================
-        // LOAD VIDEO DATA FROM JSON FILE
+        // LOAD VIDEO DATA FROM VIDEOLIST.JSON
         // ============================================
         
-        // Default video data (used if videos.json can't be loaded)
-        const defaultVideoData = {
-            "musicVideos": [
-                {
-                    "title": "Sample Music Video 1",
-                    "url": "https://archive.org/download/sample-video/sample.mp4",
-                    "thumbnail": "thumbnails/sample1.jpg",
-                    "duration": "3:45",
-                    "videoId": "sample1",
-                    "description": "This is a sample music video"
-                },
-                {
-                    "title": "Sample Music Video 2",
-                    "url": "https://archive.org/download/sample-video/sample.mp4",
-                    "thumbnail": "thumbnails/sample1.jpg",
-                    "duration": "4:20",
-                    "videoId": "sample2",
-                    "description": "Another sample music video"
-                },
-                {
-                    "title": "Sample Music Video 3",
-                    "url": "https://archive.org/download/sample-video/sample.mp4",
-                    "thumbnail": "thumbnails/sample1.jpg",
-                    "duration": "5:10",
-                    "videoId": "sample3",
-                    "description": "Third sample music video"
-                },
-                {
-                    "title": "Sample Music Video 4",
-                    "url": "https://archive.org/download/sample-video/sample.mp4",
-                    "thumbnail": "thumbnails/sample1.jpg",
-                    "duration": "3:30",
-                    "videoId": "sample4",
-                    "description": "Fourth sample music video"
-                },
-                {
-                    "title": "Sample Music Video 5",
-                    "url": "https://archive.org/download/sample-video/sample.mp4",
-                    "thumbnail": "thumbnails/sample1.jpg",
-                    "duration": "4:45",
-                    "videoId": "sample5",
-                    "description": "Fifth sample music video"
-                }
-            ],
-            "duchbesHumane": [],
-            "duchbes13": [
-                {
-                    "title": "Sample Duchbes Video 1",
-                    "url": "https://archive.org/download/sample-video-2/sample2.mp4",
-                    "thumbnail": "thumbnails/sample2.jpg",
-                    "duration": "5:20",
-                    "videoId": "sample6",
-                    "description": "First sample duchbes video"
-                },
-                {
-                    "title": "Sample Duchbes Video 2",
-                    "url": "https://archive.org/download/sample-video-2/sample2.mp4",
-                    "thumbnail": "thumbnails/sample2.jpg",
-                    "duration": "6:15",
-                    "videoId": "sample7",
-                    "description": "Second sample duchbes video"
-                }
-            ]
+        // Default video list (used if videolist.json can't be loaded)
+        const defaultVideoList = [
+            "v/music-videos/video-1/index.html",
+            "v/music-videos/video-2/index.html",
+            "v/music-videos/video-3/index.html",
+            "v/music-videos/video-4/index.html",
+            "v/music-videos/video-5/index.html",
+            "v/other-videos/video-1/index.html",
+            "v/other-videos/video-2/index.html"
+        ];
+        
+        // Default video data template (used when fetching default video list)
+        const defaultVideoTemplate = {
+            "videoId": "video1",
+            "title": "Video 1",
+            "description": "This and that and the other.",
+            "thumbnail": "v/music-videos/video-1/thumbnail.jpg",
+            "url": "https://www.dropbox.com/scl/fi/zcdzkg6brgsau8siso8ti/MacBatman.mp4?rlkey=j3q2tbzdmtq9qp0jzuffo3pwk&st=maz3c19i&raw=1",
+            "duration": "6:66",
+            "section": "music-videos"
         };
         
-        let section1Videos = [];
-        let section2Videos = [];
-        let section3Videos = [];
         let allVideos = [];
+        let videosBySection = {};
         
-        // Fetch video data from videos.json
-        async function loadVideoData() {
+        // Parse video data from an index.html file
+        async function parseVideoFromHTML(htmlPath, useDefault = false) {
             try {
-                const response = await fetch('videos.json');
-                if (!response.ok) throw new Error('videos.json not found');
-                const data = await response.json();
+                if (useDefault) {
+                    // Extract video number and section from path
+                    const pathParts = htmlPath.split('/');
+                    const section = pathParts[1];
+                    const videoFolder = pathParts[2];
+                    
+                    return {
+                        videoId: videoFolder,
+                        title: `Video ${videoFolder}`,
+                        description: "This and that and the other.",
+                        thumbnail: `v/${section}/${videoFolder}/thumbnail.jpg`,
+                        url: "https://www.dropbox.com/scl/fi/zcdzkg6brgsau8siso8ti/MacBatman.mp4?rlkey=j3q2tbzdmtq9qp0jzuffo3pwk&st=maz3c19i&raw=1",
+                        duration: "6:66",
+                        section: section
+                    };
+                }
                 
-                section1Videos = data.musicVideos || [];
-                section2Videos = data.duchbesHumane || [];
-                section3Videos = data.duchbes13 || [];
+                const response = await fetch(htmlPath);
+                if (!response.ok) throw new Error(`Failed to fetch ${htmlPath}`);
                 
-                // Combine all videos for easy reference
-                allVideos = [...section1Videos, ...section3Videos, ...section2Videos];
+                const html = await response.text();
                 
-                // Initialize the page after loading data
-                initializePage();
+                // Parse the JSON data from the script tag
+                const jsonMatch = html.match(/<script id="video-data" type="application\/json">\s*([\s\S]*?)\s*<\/script>/);
+                if (!jsonMatch) throw new Error('No video data found in HTML');
+                
+                const videoData = JSON.parse(jsonMatch[1]);
+                
+                // Extract section from path if not in data
+                if (!videoData.section) {
+                    const pathParts = htmlPath.split('/');
+                    videoData.section = pathParts[1]; // e.g., "music-videos"
+                }
+                
+                return videoData;
             } catch (error) {
-                console.warn('Could not load videos.json, using default data:', error);
-                // Use default data if JSON file can't be loaded
-                section1Videos = defaultVideoData.musicVideos;
-                section2Videos = defaultVideoData.duchbesHumane;
-                section3Videos = defaultVideoData.duchbes13;
-                allVideos = [...section1Videos, ...section3Videos, ...section2Videos];
-                initializePage();
+                console.error(`Error parsing ${htmlPath}:`, error);
+                return null;
+            }
+        }
+        
+        // Load all videos from videolist.json
+        async function loadVideoData() {
+            let videoList = [];
+            let usingDefault = false;
+            
+            try {
+                const response = await fetch('videolist.json');
+                if (!response.ok) throw new Error('videolist.json not found');
+                videoList = await response.json();
+            } catch (error) {
+                console.warn('Could not load videolist.json, using default list:', error);
+                videoList = defaultVideoList;
+                usingDefault = true;
+            }
+            
+            // Fetch and parse all video HTML files
+            const videoPromises = videoList.map(path => parseVideoFromHTML(path, usingDefault));
+            const videos = await Promise.all(videoPromises);
+            
+            // Filter out any failed parses
+            allVideos = videos.filter(v => v !== null);
+            
+            // Group videos by section
+            videosBySection = {};
+            allVideos.forEach(video => {
+                if (!videosBySection[video.section]) {
+                    videosBySection[video.section] = [];
+                }
+                videosBySection[video.section].push(video);
+            });
+            
+            // Initialize the page
+            initializePage();
+            
+            // Check for shared video link (after videos are loaded)
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoId = urlParams.get('v');
+            
+            if (videoId) {
+                const videoIndex = allVideos.findIndex(v => v.videoId === videoId);
+                if (videoIndex !== -1) {
+                    // Update page meta tags for sharing
+                    const video = allVideos[videoIndex];
+                    document.title = video.title + ' - Hellmish Productions';
+                    
+                    // Update or create Open Graph meta tags
+                    updateMetaTag('og:title', video.title);
+                    updateMetaTag('og:description', video.description);
+                    updateMetaTag('og:image', SITE_URL + '/' + video.thumbnail);
+                    updateMetaTag('og:url', window.location.href);
+                    
+                    // Optionally auto-play the video
+                    setTimeout(() => openVideo(videoIndex, false), 500);
+                }
             }
         }
         
         function initializePage() {
-            if (section1Videos.length > 0) {
-                document.getElementById('section1Title').style.display = 'block';
-                buildVideoGrid(section1Videos, section1Grid, 0);
-            }
-            if (section3Videos.length > 0) {
-                document.getElementById('section3Title').style.display = 'block';
-                buildVideoGrid(section3Videos, section3Grid, section1Videos.length);
-            }
-            if (section2Videos.length > 0) {
-                document.getElementById('section2Title').style.display = 'block';
-                buildVideoGrid(section2Videos, section2Grid, section1Videos.length + section3Videos.length);
-            }
+            // Get all unique sections from videosBySection
+            const sectionKeys = Object.keys(videosBySection);
+            
+            // Section title mapping (customize as needed)
+            const sectionTitles = {
+                'music-videos': 'Music Videos',
+                'duchbes-13': 'Duchbes 13',
+                'duchbes-humane': 'Duchbes Humane',
+                'other-videos': 'Other Videos'
+            };
+            
+            // Grid and title element IDs (we'll use section1, section2, section3 in order)
+            const gridIds = ['section1Grid', 'section2Grid', 'section3Grid'];
+            const titleIds = ['section1Title', 'section2Title', 'section3Title'];
+            
+            let startIndex = 0;
+            
+            sectionKeys.forEach((sectionKey, index) => {
+                const videos = videosBySection[sectionKey];
+                if (videos.length > 0 && index < gridIds.length) {
+                    const gridElement = document.getElementById(gridIds[index]);
+                    const titleElement = document.getElementById(titleIds[index]);
+                    
+                    if (gridElement && titleElement) {
+                        // Set title (use mapped title or capitalize section key)
+                        const title = sectionTitles[sectionKey] || 
+                                    sectionKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                        titleElement.textContent = title;
+                        titleElement.style.display = 'block';
+                        
+                        buildVideoGrid(videos, gridElement, startIndex);
+                        startIndex += videos.length;
+                    }
+                }
+            });
         }
 
         let currentPlaylist = [];
@@ -603,9 +660,6 @@
         let currentIndex = 0;
         let isPlaylistMode = false;
 
-        const section1Grid = document.getElementById('section1Grid');
-        const section2Grid = document.getElementById('section2Grid');
-        const section3Grid = document.getElementById('section3Grid');
         const modal = document.getElementById('modal');
         const videoPlayer = document.getElementById('videoPlayer');
         const currentTitle = document.getElementById('currentTitle');
@@ -618,7 +672,7 @@
         const copyBtn = document.getElementById('copyBtn');
 
         // CONFIGURE YOUR SITE URL HERE
-        const SITE_URL = 'https://hellmish-productions.github.io/video-gallery'; // Change this to your actual domain
+        const SITE_URL = 'https://hellmish-productions.github.io/video-gallery';
 
         // Load video data on page load
         loadVideoData();
@@ -694,7 +748,7 @@
             event.stopPropagation();
             
             const video = allVideos[videoIndex];
-            const shareUrl = `${SITE_URL}?v=${video.videoId}`;
+            const shareUrl = `${SITE_URL}/v/${video.section}/${video.videoId}/`;
             
             shareLinkInput.value = shareUrl;
             shareLinkPopup.classList.add('active');
@@ -833,30 +887,6 @@
             if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
                 if (document.activeElement.tagName === 'VIDEO') {
                     e.preventDefault();
-                }
-            }
-        });
-
-        // Check for shared video link on page load
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const videoId = urlParams.get('v');
-            
-            if (videoId) {
-                const videoIndex = allVideos.findIndex(v => v.videoId === videoId);
-                if (videoIndex !== -1) {
-                    // Update page meta tags for sharing
-                    const video = allVideos[videoIndex];
-                    document.title = video.title + ' - Hellmish Productions';
-                    
-                    // Update or create Open Graph meta tags
-                    updateMetaTag('og:title', video.title);
-                    updateMetaTag('og:description', video.description);
-                    updateMetaTag('og:image', SITE_URL + '/' + video.thumbnail);
-                    updateMetaTag('og:url', window.location.href);
-                    
-                    // Optionally auto-play the video
-                    setTimeout(() => openVideo(videoIndex, false), 500);
                 }
             }
         });
