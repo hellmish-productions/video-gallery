@@ -453,7 +453,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.3</div>
+    <div class="version">v1.4</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -533,16 +533,36 @@
                 
                 const html = await response.text();
                 
-                // Parse the JSON data from the script tag
+                // Parse the JSON data from the script tag (only url and duration)
                 const jsonMatch = html.match(/<script id="video-data" type="application\/json">\s*([\s\S]*?)\s*<\/script>/);
                 if (!jsonMatch) throw new Error('No video data found in HTML');
                 
                 const videoData = JSON.parse(jsonMatch[1]);
                 
-                // Extract section from path if not in data
-                if (!videoData.section) {
-                    const pathParts = htmlPath.split('/');
-                    videoData.section = pathParts[1]; // e.g., "music-videos"
+                // Extract path parts for auto-generation
+                const pathParts = htmlPath.split('/');
+                const section = pathParts[1]; // e.g., "music-videos"
+                const videoFolder = pathParts[2]; // e.g., "macbatman"
+                
+                // Always auto-generate these fields
+                videoData.videoId = videoFolder;
+                videoData.section = section;
+                videoData.thumbnail = `v/${section}/${videoFolder}/thumbnail.jpg`;
+                
+                // Extract title from og:title meta tag (remove " - Hellmish Productions" suffix)
+                const titleMatch = html.match(/<meta property="og:title" content="([^"]+)"/);
+                if (titleMatch) {
+                    videoData.title = titleMatch[1].replace(/ - Hellmish Productions$/, '').replace(/ \/ Hellmish Productions$/, '');
+                } else {
+                    videoData.title = videoFolder; // Fallback to folder name
+                }
+                
+                // Extract description from og:description meta tag
+                const descMatch = html.match(/<meta property="og:description" content="([^"]+)"/);
+                if (descMatch) {
+                    videoData.description = descMatch[1];
+                } else {
+                    videoData.description = ""; // Fallback to empty
                 }
                 
                 return videoData;
@@ -682,12 +702,10 @@
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 
-                const durationId = `duration-${video.videoId}`;
-                
                 card.innerHTML = `
                     <div class="thumbnail" onclick="openVideo(${startIndex + index}, false)">
                         <img src="${video.thumbnail}" alt="${video.title}">
-                        <div class="video-duration" id="${durationId}">${video.duration || 'Loading...'}</div>
+                        <div class="video-duration">${video.duration}</div>
                     </div>
                     <div class="video-title-row">
                         <div class="video-title">${video.title}</div>
@@ -705,42 +723,7 @@
                 `;
                 
                 grid.appendChild(card);
-                
-                // Get duration from video file if not provided
-                if (!video.duration) {
-                    getVideoDuration(video.url, durationId);
-                }
             });
-        }
-
-        // Get video duration from the actual video file
-        function getVideoDuration(videoUrl, elementId) {
-            const video = document.createElement('video');
-            video.preload = 'metadata';
-            
-            video.onloadedmetadata = function() {
-                const duration = Math.floor(video.duration);
-                const minutes = Math.floor(duration / 60);
-                const seconds = duration % 60;
-                const formattedDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.textContent = formattedDuration;
-                }
-                
-                // Clean up
-                video.src = '';
-            };
-            
-            video.onerror = function() {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.textContent = '--:--';
-                }
-            };
-            
-            video.src = videoUrl;
         }
 
         function shareVideo(videoIndex, event) {
