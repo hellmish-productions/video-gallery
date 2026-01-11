@@ -366,7 +366,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.10</div>
+    <div class="version">v1.11</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -616,14 +616,44 @@
             // Get the share button element
             const shareButton = event.currentTarget;
             
-            // Copy to clipboard
-            navigator.clipboard.writeText(shareUrl).then(() => {
+            // Check if Web Share API is available (mobile devices)
+            if (navigator.share && navigator.canShare) {
+                // Check if we can share this content
+                const shareData = {
+                    title: video.title,
+                    text: video.description,
+                    url: shareUrl
+                };
+                
+                if (navigator.canShare(shareData)) {
+                    navigator.share(shareData)
+                        .then(() => {
+                            showToast('Shared!', shareButton);
+                        })
+                        .catch(err => {
+                            // User cancelled or error occurred
+                            if (err.name !== 'AbortError') {
+                                console.error('Share failed:', err);
+                                // Fallback to copy
+                                copyToClipboard(shareUrl, shareButton);
+                            }
+                        });
+                    return;
+                }
+            }
+            
+            // Desktop or share not supported - just copy to clipboard
+            copyToClipboard(shareUrl, shareButton);
+        }
+        
+        function copyToClipboard(url, shareButton) {
+            navigator.clipboard.writeText(url).then(() => {
                 showToast('Link copied!', shareButton);
             }).catch(err => {
                 console.error('Failed to copy:', err);
                 // Fallback for older browsers
                 const textarea = document.createElement('textarea');
-                textarea.value = shareUrl;
+                textarea.value = url;
                 document.body.appendChild(textarea);
                 textarea.select();
                 document.execCommand('copy');
@@ -657,21 +687,26 @@
                 return;
             }
             
-            const rect = thumbnail.getBoundingClientRect();
-            
-            // Create toast
+            // Create toast and position it relative to thumbnail
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.textContent = message;
-            document.body.appendChild(toast);
             
-            // Position at center of thumbnail
-            toast.style.position = 'fixed';
-            const startLeft = rect.left + rect.width / 2;
-            const startTop = rect.top + rect.height / 2;
-            toast.style.left = startLeft + 'px';
-            toast.style.top = startTop + 'px';
+            // Position toast absolutely within the thumbnail
+            toast.style.position = 'absolute';
+            toast.style.left = '50%';
+            toast.style.top = '50%';
             toast.style.transform = 'translate(-50%, -50%)';
+            toast.style.zIndex = '100';
+            
+            // Make thumbnail position relative if it isn't already
+            const thumbnailPosition = window.getComputedStyle(thumbnail).position;
+            if (thumbnailPosition === 'static') {
+                thumbnail.style.position = 'relative';
+            }
+            
+            // Append toast to thumbnail (so it moves with it)
+            thumbnail.appendChild(toast);
             
             // Fade in and start moving up
             setTimeout(() => {
@@ -679,20 +714,21 @@
                 
                 // Animate upward over 1 second
                 const startTime = Date.now();
-                const duration = 1000; // Changed from 2000 to 1000
+                const duration = 1000;
                 const distance = 30; // Move up 30px
+                const startTop = 50; // Starting at 50% (center)
                 
                 const animate = () => {
                     const elapsed = Date.now() - startTime;
                     const progress = Math.min(elapsed / duration, 1);
                     
-                    // Move up
-                    const currentTop = startTop - (distance * progress);
-                    toast.style.top = currentTop + 'px';
+                    // Move up (in percentage)
+                    const currentTop = startTop - ((distance / thumbnail.offsetHeight) * 100 * progress);
+                    toast.style.top = currentTop + '%';
                     
-                    // Fade out starting at 25% progress (0.25 seconds in)
+                    // Fade out starting at 25% progress
                     if (progress > 0.25) {
-                        const fadeProgress = (progress - 0.25) / 0.75; // 0 to 1 over remaining 75%
+                        const fadeProgress = (progress - 0.25) / 0.75;
                         toast.style.opacity = 1 - fadeProgress;
                     }
                     
