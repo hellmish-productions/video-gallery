@@ -131,6 +131,40 @@
             line-height: 1.4;
             flex: 1;
         }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0px;
+        }
+        
+        .copy-btn-desktop {
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: none;
+        }
+        
+        .copy-btn-desktop:hover {
+            background: #272727;
+            color: #3ea6ff;
+        }
+        
+        .copy-btn-desktop svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Show copy button only on desktop (min-width: 769px) */
+        @media (min-width: 769px) {
+            .copy-btn-desktop {
+                display: block;
+            }
+        }
 
         .video-description {
             font-size: 14px;
@@ -353,11 +387,6 @@
             opacity: 1;
         }
 
-        @media (max-width: 768px) {
-            .version {
-                display: none;
-            }
-        }
     </style>
 </head>
 <body>
@@ -366,7 +395,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.13</div>
+    <div class="version">v1.14</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -581,6 +610,15 @@
 
         // Load video data on page load
         loadVideoData();
+        
+        // Hide share buttons if native share is not supported
+        if (!navigator.share) {
+            document.addEventListener('DOMContentLoaded', () => {
+                const style = document.createElement('style');
+                style.textContent = '.share-btn { display: none !important; }';
+                document.head.appendChild(style);
+            });
+        }
 
         // Build section grids
         function buildVideoGrid(videos, grid, startIndex) {
@@ -595,15 +633,23 @@
                     </div>
                     <div class="video-title-row">
                         <div class="video-title">${video.title}</div>
-                        <button class="share-btn" onclick="shareVideo(${startIndex + index}, event)" title="Share">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="18" cy="5" r="3"></circle>
-                                <circle cx="6" cy="12" r="3"></circle>
-                                <circle cx="18" cy="19" r="3"></circle>
-                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                            </svg>
-                        </button>
+                        <div class="action-buttons">
+                            <button class="copy-btn-desktop" onclick="copyVideoLink(${startIndex + index}, event)" title="Copy Link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                            <button class="share-btn" onclick="shareVideo(${startIndex + index}, event)" title="Share">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="video-description">${video.description}</div>
                 `;
@@ -621,31 +667,53 @@
             // Get the share button element
             const shareButton = event.currentTarget;
             
-            // Check if device is mobile and Web Share API is available
-            if (isMobile() && navigator.share) {
+            // Always try to use native share dialog if available
+            if (navigator.share) {
                 const shareData = {
                     url: shareUrl
                 };
                 
-                if (navigator.canShare && navigator.canShare(shareData)) {
-                    navigator.share(shareData)
-                        .then(() => {
+                navigator.share(shareData)
+                    .then(() => {
+                        if (isMobile()) {
                             showToast('Shared!', shareButton);
-                        })
-                        .catch(err => {
-                            // User cancelled or error occurred
-                            if (err.name !== 'AbortError') {
-                                console.error('Share failed:', err);
-                                // Fallback to copy
-                                copyToClipboard(shareUrl, shareButton);
-                            }
-                        });
-                    return;
-                }
+                        }
+                    })
+                    .catch(err => {
+                        // User cancelled - do nothing
+                        if (err.name === 'AbortError') {
+                            return;
+                        }
+                        
+                        // Permission denied or not allowed (iframe, etc) - hide share buttons and use copy
+                        if (err.name === 'NotAllowedError') {
+                            console.log('Share not allowed, hiding share buttons');
+                            document.querySelectorAll('.share-btn').forEach(btn => btn.style.display = 'none');
+                            copyToClipboard(shareUrl, shareButton);
+                            return;
+                        }
+                        
+                        // Other errors - fallback to copy
+                        console.error('Share failed:', err);
+                        copyToClipboard(shareUrl, shareButton);
+                    });
+            } else {
+                // Fallback to copy if share not available
+                copyToClipboard(shareUrl, shareButton);
             }
+        }
+        
+        function copyVideoLink(videoIndex, event) {
+            event.stopPropagation();
             
-            // Desktop or share not supported - just copy to clipboard
-            copyToClipboard(shareUrl, shareButton);
+            const video = allVideos[videoIndex];
+            const shareUrl = `${SITE_URL}/v/${video.section}/${video.videoId}/`;
+            
+            // Get the copy button element
+            const copyButton = event.currentTarget;
+            
+            // Always copy to clipboard and show toast
+            copyToClipboard(shareUrl, copyButton);
         }
         
         function copyToClipboard(url, shareButton) {
