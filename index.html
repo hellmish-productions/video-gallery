@@ -450,18 +450,10 @@
 <body>
     <div class="container">
         <img src="img/hellmish-productions-banner.png" alt="Hellmish Productions" class="banner">
-        
-        <h2 id="section1Title" style="display: none;">Music Videos</h2>
-        <div class="video-grid" id="section1Grid"></div>
-
-        <h2 id="section3Title" style="display: none;">Duchbes 13</h2>
-        <div class="video-grid" id="section3Grid"></div>
-
-        <h2 id="section2Title" style="display: none;">Duchbes Humane</h2>
-        <div class="video-grid" id="section2Grid"></div>
+        <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.2</div>
+    <div class="version">v1.3</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -514,7 +506,7 @@
         };
         
         let allVideos = [];
-        let videosBySection = {};
+        let sectionsInOrder = []; // Preserve order from videolist.json
         
         // Parse video data from an index.html file
         async function parseVideoFromHTML(htmlPath, useDefault = false) {
@@ -582,17 +574,18 @@
             // Filter out any failed parses
             allVideos = videos.filter(v => v !== null);
             
-            // Group videos by section
-            videosBySection = {};
+            // Group videos by section while preserving order
+            const videosBySection = {};
             allVideos.forEach(video => {
                 if (!videosBySection[video.section]) {
                     videosBySection[video.section] = [];
+                    sectionsInOrder.push(video.section); // Track order of first appearance
                 }
                 videosBySection[video.section].push(video);
             });
             
             // Initialize the page
-            initializePage();
+            initializePage(videosBySection);
             
             // Check for shared video link (after videos are loaded)
             const urlParams = new URLSearchParams(window.location.search);
@@ -617,9 +610,8 @@
             }
         }
         
-        function initializePage() {
-            // Get all unique sections from videosBySection
-            const sectionKeys = Object.keys(videosBySection);
+        function initializePage(videosBySection) {
+            const container = document.querySelector('.container');
             
             // Section title mapping (customize as needed)
             const sectionTitles = {
@@ -629,28 +621,35 @@
                 'other-videos': 'Other Videos'
             };
             
-            // Grid and title element IDs (we'll use section1, section2, section3 in order)
-            const gridIds = ['section1Grid', 'section2Grid', 'section3Grid'];
-            const titleIds = ['section1Title', 'section2Title', 'section3Title'];
-            
             let startIndex = 0;
             
-            sectionKeys.forEach((sectionKey, index) => {
+            // Clear existing grids
+            document.querySelectorAll('.video-grid').forEach(grid => {
+                grid.innerHTML = '';
+                grid.previousElementSibling.style.display = 'none';
+            });
+            
+            // Create sections in order
+            sectionsInOrder.forEach((sectionKey) => {
                 const videos = videosBySection[sectionKey];
-                if (videos.length > 0 && index < gridIds.length) {
-                    const gridElement = document.getElementById(gridIds[index]);
-                    const titleElement = document.getElementById(titleIds[index]);
+                if (videos && videos.length > 0) {
+                    // Get or create section title
+                    const title = sectionTitles[sectionKey] || 
+                                sectionKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                     
-                    if (gridElement && titleElement) {
-                        // Set title (use mapped title or capitalize section key)
-                        const title = sectionTitles[sectionKey] || 
-                                    sectionKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                        titleElement.textContent = title;
-                        titleElement.style.display = 'block';
-                        
-                        buildVideoGrid(videos, gridElement, startIndex);
-                        startIndex += videos.length;
-                    }
+                    // Create section header
+                    const header = document.createElement('h2');
+                    header.textContent = title;
+                    container.appendChild(header);
+                    
+                    // Create grid
+                    const grid = document.createElement('div');
+                    grid.className = 'video-grid';
+                    container.appendChild(grid);
+                    
+                    // Build the grid
+                    buildVideoGrid(videos, grid, startIndex);
+                    startIndex += videos.length;
                 }
             });
         }
@@ -903,4 +902,3 @@
     </script>
 </body>
 </html>
-
