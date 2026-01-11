@@ -453,7 +453,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.5</div>
+    <div class="version">v1.6</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -618,8 +618,12 @@
                     const video = allVideos[videoIndex];
                     document.title = video.title + ' - Hellmish Productions';
                     
-                    // Auto-play the video
-                    setTimeout(() => openVideo(videoIndex, false), 500);
+                    // Wait for next frame to ensure DOM is fully ready
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            openVideo(videoIndex, false);
+                        });
+                    });
                 }
             }
         }
