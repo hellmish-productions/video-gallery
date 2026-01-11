@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Gallery</title>
     <link rel="icon" type="image/jpeg" href="img/batman-icon.jpg">
-    
-    <!-- GoatCounter Analytics -->
-    <script data-goatcounter="https://hellmish-productions.goatcounter.com/count"
-            async src="//gc.zgo.at/count.js"></script>
-    
     <style>
         @font-face {
             font-family: 'Batman Forever';
@@ -71,7 +66,7 @@
         .video-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            gap: 23px;
             margin-bottom: 40px;
         }
         
@@ -96,10 +91,26 @@
         .video-card, .playlist-card {
             cursor: pointer;
             transition: transform 0.2s;
+            transform: scale(1.15);
         }
         
         .video-card:hover, .playlist-card:hover {
-            transform: scale(1.02);
+            transform: scale(1.17);
+        }
+        
+        .video-card, .playlist-card {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .video-card, .playlist-card {
+            cursor: pointer;
+            transition: transform 0.2s;
+            transform: scale(1.15);
+        }
+        
+        .video-card:hover, .playlist-card:hover {
+            transform: scale(1.17);
         }
         
         .thumbnail {
@@ -121,32 +132,7 @@
         }
         
         .play-button {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 68px;
-            height: 48px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-        
-        .video-card:hover .play-button, .playlist-card:hover .play-button {
-            background: #ff0000;
-        }
-        
-        .play-button::after {
-            content: '';
-            width: 0;
-            height: 0;
-            border-left: 20px solid white;
-            border-top: 12px solid transparent;
-            border-bottom: 12px solid transparent;
-            margin-left: 4px;
+            display: none;
         }
         
         .playlist-overlay {
@@ -644,7 +630,6 @@
                 card.innerHTML = `
                     <div class="thumbnail">
                         <img src="${video.thumbnail}" alt="${video.title}">
-                        <div class="play-button"></div>
                         <div class="video-duration" id="${durationId}">${video.duration || 'Loading...'}</div>
                     </div>
                     <div class="video-title">${video.title}</div>
@@ -765,15 +750,6 @@
             const video = allVideos[videoIndex];
             videoPlayer.src = video.url;
             currentTitle.textContent = video.title;
-            
-            // Track video view with GoatCounter
-            if (window.goatcounter) {
-                window.goatcounter.count({
-                    path: `/video/${video.videoId}`,
-                    title: video.title,
-                    event: true
-                });
-            }
             
             if (isPlaylistMode) {
                 const position = currentPlaylist.indexOf(videoIndex) + 1;
