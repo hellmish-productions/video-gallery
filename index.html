@@ -366,7 +366,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.11</div>
+    <div class="version">v1.12</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -617,15 +617,12 @@
             const shareButton = event.currentTarget;
             
             // Check if Web Share API is available (mobile devices)
-            if (navigator.share && navigator.canShare) {
-                // Check if we can share this content
+            if (navigator.share) {
                 const shareData = {
-                    title: video.title,
-                    text: video.description,
                     url: shareUrl
                 };
                 
-                if (navigator.canShare(shareData)) {
+                if (navigator.canShare && navigator.canShare(shareData)) {
                     navigator.share(shareData)
                         .then(() => {
                             showToast('Shared!', shareButton);
