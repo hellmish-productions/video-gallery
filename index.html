@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Gallery</title>
     <link rel="icon" type="image/jpeg" href="img/batman-icon.jpg">
+    
+    <!-- GoatCounter Analytics -->
+    <script data-goatcounter="https://hellmish-productions.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+    
     <style>
         @font-face {
             font-family: 'Batman Forever';
@@ -23,13 +28,12 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: #000000;
             color: #fff;
-            padding: 20px 0;
+            padding: 20px;
         }
         
         .container {
-            max-width: 100%;
-            margin: 0;
-            padding: 0 40px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
         
         h1 {
@@ -67,7 +71,7 @@
         .video-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 50px;
+            gap: 20px;
             margin-bottom: 40px;
         }
         
@@ -92,24 +96,10 @@
         .video-card, .playlist-card {
             cursor: pointer;
             transition: transform 0.2s;
-            transform: scale(1.15);
         }
         
         .video-card:hover, .playlist-card:hover {
-            transform: scale(1.17);
-        }
-        
-        .video-card, .playlist-card {
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .video-card, .playlist-card {
-            cursor: pointer;
-        }
-        
-        .video-card:hover .thumbnail, .playlist-card:hover .thumbnail {
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
         
         .thumbnail {
@@ -119,24 +109,6 @@
             background: #272727;
             border-radius: 12px;
             overflow: hidden;
-            transition: transform 0.2s;
-            will-change: transform;
-        }
-        
-        .video-title, .playlist-title {
-            margin-top: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            line-height: 1.4;
-            will-change: auto;
-        }
-        
-        .video-description {
-            font-size: 14px;
-            color: #aaa;
-            margin-top: 6px;
-            line-height: 1.3;
-            will-change: auto;
         }
         
         .thumbnail img {
@@ -372,96 +344,6 @@
             background: #2a8dd6;
         }
 
-        .share-btn {
-            background: #3ea6ff;
-        }
-        
-        .share-btn:hover {
-            background: #2a8dd6;
-        }
-        
-        .share-link-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1f1f1f;
-            padding: 20px;
-            border-radius: 12px;
-            z-index: 2000;
-            display: none;
-            max-width: 500px;
-            width: 90%;
-        }
-        
-        .share-link-popup.active {
-            display: block;
-        }
-        
-        .share-link-popup h3 {
-            margin-bottom: 15px;
-        }
-        
-        .share-link-input {
-            width: 100%;
-            background: #0f0f0f;
-            border: 1px solid #3f3f3f;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-        
-        .copy-btn {
-            background: #3ea6ff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            width: 100%;
-        }
-        
-        .copy-btn:hover {
-            background: #2a8dd6;
-        }
-
-        .random-btn {
-            background: #ff6b35;
-        }
-
-        .random-btn:hover {
-            background: #e85a28;
-        }
-
-        .playlist-icon {
-            width: 20px;
-            height: 20px;
-        }
-
-        .playlist-btn {
-            background: #3ea6ff;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 24px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-
-        .playlist-btn:hover {
-            background: #2a8dd6;
-        }
-
         .random-btn {
             background: #ff6b35;
         }
@@ -499,22 +381,6 @@
         .playlists-section {
             margin-bottom: 30px;
         }
-
-        .version {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            font-size: 12px;
-            color: #666;
-            z-index: 9999;
-            font-family: monospace;
-        }
-
-        @media (max-width: 768px) {
-            .version {
-                display: none;
-            }
-        }
     </style>
 </head>
 <body>
@@ -537,8 +403,6 @@
             </a>
         </div>
     </div>
-
-    <div class="version">v0.7</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -577,43 +441,50 @@
                     "thumbnail": "thumbnails/sample1.jpg",
                     "duration": "4:20",
                     "videoId": "sample2",
-                    "description": "This is another sample music video"
+                    "description": "Another sample music video"
+                },
+                {
+                    "title": "Sample Music Video 3",
+                    "url": "https://archive.org/download/sample-video/sample.mp4",
+                    "thumbnail": "thumbnails/sample1.jpg",
+                    "duration": "5:10",
+                    "videoId": "sample3",
+                    "description": "Third sample music video"
+                },
+                {
+                    "title": "Sample Music Video 4",
+                    "url": "https://archive.org/download/sample-video/sample.mp4",
+                    "thumbnail": "thumbnails/sample1.jpg",
+                    "duration": "3:30",
+                    "videoId": "sample4",
+                    "description": "Fourth sample music video"
+                },
+                {
+                    "title": "Sample Music Video 5",
+                    "url": "https://archive.org/download/sample-video/sample.mp4",
+                    "thumbnail": "thumbnails/sample1.jpg",
+                    "duration": "4:45",
+                    "videoId": "sample5",
+                    "description": "Fifth sample music video"
                 }
             ],
-            "duchbesHumane": [
+            "duchbesHumane": [],
+            "duchbes13": [
                 {
-                    "title": "Sample Humane Video 1",
+                    "title": "Sample Duchbes Video 1",
                     "url": "https://archive.org/download/sample-video-2/sample2.mp4",
                     "thumbnail": "thumbnails/sample2.jpg",
                     "duration": "5:20",
-                    "videoId": "sample3",
-                    "description": "This is a sample humane video"
+                    "videoId": "sample6",
+                    "description": "First sample duchbes video"
                 },
                 {
-                    "title": "Sample Humane Video 2",
+                    "title": "Sample Duchbes Video 2",
                     "url": "https://archive.org/download/sample-video-2/sample2.mp4",
                     "thumbnail": "thumbnails/sample2.jpg",
                     "duration": "6:15",
-                    "videoId": "sample4",
-                    "description": "This is another sample humane video"
-                }
-            ],
-            "duchbes13": [
-                {
-                    "title": "Sample 13 Video 1",
-                    "url": "https://archive.org/download/sample-video-3/sample3.mp4",
-                    "thumbnail": "thumbnails/sample3.jpg",
-                    "duration": "7:10",
-                    "videoId": "sample5",
-                    "description": "This is a sample duchbes 13 video"
-                },
-                {
-                    "title": "Sample 13 Video 2",
-                    "url": "https://archive.org/download/sample-video-3/sample3.mp4",
-                    "thumbnail": "thumbnails/sample3.jpg",
-                    "duration": "8:30",
-                    "videoId": "sample6",
-                    "description": "This is another sample duchbes 13 video"
+                    "videoId": "sample7",
+                    "description": "Second sample duchbes video"
                 }
             ]
         };
@@ -664,9 +535,6 @@
                 buildVideoGrid(section2Videos, section2Grid, section1Videos.length + section3Videos.length);
             }
         }
-
-        // IMPORTANT: Change this to something unique to your site!
-        const namespace = 'hellmish-productions-gallery';  // Change to 'yourname2024' or similar
 
         let currentPlaylist = [];
         let currentPlaylistName = '';
@@ -742,68 +610,6 @@
             
             video.src = videoUrl;
         }
-
-        // Fetch view count from GoatCounter API
-        async function fetchViewCount(videoId, elementId) {
-            try {
-                // GoatCounter API endpoint
-                const response = await fetch(`https://hellmish-productions.goatcounter.com/api/v0/stats/total?path=/video/${videoId}`, {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error('API request failed');
-                }
-                
-                const data = await response.json();
-                const viewCount = data.count || 0;
-                
-                const element = document.getElementById(elementId);
-                if (element) {
-                    const eyeIcon = `<svg class="eye-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-                    element.innerHTML = `${eyeIcon}<span>${formatViewsNumber(viewCount)}</span>`;
-                }
-            } catch (error) {
-                console.log('View count not available yet:', error);
-                const element = document.getElementById(elementId);
-                if (element) {
-                    const eyeIcon = `<svg class="eye-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-                    element.innerHTML = `${eyeIcon}<span>--</span>`;
-                }
-            }
-        }
-
-        // Increment view count when video is played
-        function incrementViewCount(videoId) {
-            // Track video view with GoatCounter
-            if (window.goatcounter) {
-                window.goatcounter.count({
-                    path: `/video/${videoId}`,
-                    title: allVideos.find(v => v.videoId === videoId)?.title || 'Video',
-                    event: true
-                });
-            }
-        }
-
-        // Format view count nicely
-        function formatViewsNumber(count) {
-            if (count === 0) return '0';
-            if (count === 1) return '1';
-            if (count < 1000) return `${count}`;
-            if (count < 1000000) return `${(count / 1000).toFixed(1)}K`;
-            return `${(count / 1000000).toFixed(1)}M`;
-        }
-
-        function formatViews(count) {
-            const eyeIcon = `<svg class="eye-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-            return `${eyeIcon}<span>${formatViewsNumber(count)}</span>`;
-        }
-
-        buildVideoGrid(section1Videos, section1Grid, 0);
-        buildVideoGrid(section3Videos, section3Grid, section1Videos.length);
-        buildVideoGrid(section2Videos, section2Grid, section1Videos.length + section3Videos.length);
 
         function openVideo(videoIndex, playlist = false) {
             if (playlist) {
