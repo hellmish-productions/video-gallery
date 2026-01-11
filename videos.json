@@ -49,22 +49,22 @@
       "description": "From lattes to latex, this is the untold saga of a caped crusader chasing the dream. Batman battles bad tips, bad grades, and bad trades - only to realize vengeance doesn’t come with dental, and someone’s still gotta clean the cave."
     }
   ],
+  "duchbes13": [
+    {
+      "title": "Dad's Little Man",
+      "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_8",
+      "thumbnail": "thumbnails/u8811273158_city_--ar_9151_--v_7_f77dcdd4-d9e9-4342-b89c-65330560f545_3.png",
+      "duration": "4:51",
+      "videoId": "s2v1",
+      "description": "Hellmish Productions - Special Presentation"
+    }
+  ],
   "duchbesHumane": [
     {
       "title": "Duchbes Humane Video",
       "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_7",
       "thumbnail": "thumbnails/section2-video1.jpg",
       "duration": "12:10",
-      "videoId": "s2v1",
-      "description": "Add your video description here"
-    }
-  ],
-  "duchbes13": [
-    {
-      "title": "Duchbes 13 - Video 1",
-      "url": "YOUR_INTERNET_ARCHIVE_VIDEO_URL_8",
-      "thumbnail": "thumbnails/section3-video1.jpg",
-      "duration": "9:15",
       "videoId": "s3v1",
       "description": "Add your video description here"
     }
