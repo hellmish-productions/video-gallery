@@ -402,7 +402,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.15</div>
+    <div class="version">v1.16</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -613,6 +613,37 @@
         // Detect if device is mobile
         function isMobile() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // Add PWA manifest only for mobile devices
+        if (isMobile()) {
+            // Add manifest link
+            const manifestLink = document.createElement('link');
+            manifestLink.rel = 'manifest';
+            manifestLink.href = 'manifest.json';
+            document.head.appendChild(manifestLink);
+            
+            // Add theme color
+            const themeColor = document.createElement('meta');
+            themeColor.name = 'theme-color';
+            themeColor.content = '#000000';
+            document.head.appendChild(themeColor);
+            
+            // Add Apple-specific meta tags
+            const appleCapable = document.createElement('meta');
+            appleCapable.name = 'apple-mobile-web-app-capable';
+            appleCapable.content = 'yes';
+            document.head.appendChild(appleCapable);
+            
+            const appleStatus = document.createElement('meta');
+            appleStatus.name = 'apple-mobile-web-app-status-bar-style';
+            appleStatus.content = 'black';
+            document.head.appendChild(appleStatus);
+            
+            const appleTitle = document.createElement('meta');
+            appleTitle.name = 'apple-mobile-web-app-title';
+            appleTitle.content = 'Hellmish';
+            document.head.appendChild(appleTitle);
         }
 
         // Load video data on page load
