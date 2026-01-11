@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Gallery</title>
+    <link rel="icon" type="image/jpeg" href="img/batman-icon.jpg">
     <style>
         @font-face {
             font-family: 'Batman Forever';
@@ -62,12 +63,13 @@
         h2::before {
             content: '';
             display: inline-block;
-            width: 37px;
-            height: 24px;
+            width: 74px;
+            height: 48px;
             background-image: url('img/batman-icon.jpg');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
+            flex-shrink: 0;
         }
         
         .section-title {
