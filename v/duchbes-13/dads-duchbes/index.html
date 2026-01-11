@@ -69,8 +69,19 @@
     <!-- REDIRECT SCRIPT (runs in user's browser, not for WhatsApp crawler) -->
     <script>
         // Auto-detect videoId from current path
+        // Path examples:
+        // /v/music-videos/macbatman/ -> ['v', 'music-videos', 'macbatman']
+        // /v/music-videos/macbatman/index.html -> ['v', 'music-videos', 'macbatman', 'index.html']
+        // /v/music-videos/macbatman -> ['v', 'music-videos', 'macbatman']
         const pathParts = window.location.pathname.split('/').filter(p => p);
-        const videoId = pathParts[pathParts.length - 2]; // Get folder name (second to last part)
+        
+        // If last part is 'index.html', videoId is second to last
+        // Otherwise, videoId is the last part
+        const lastPart = pathParts[pathParts.length - 1];
+        const videoId = lastPart === 'index.html' 
+            ? pathParts[pathParts.length - 2]
+            : lastPart;
+            
         window.location.replace('../../../index.html?v=' + videoId);
     </script>
 </body>
