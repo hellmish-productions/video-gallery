@@ -68,7 +68,10 @@
     
     <!-- REDIRECT SCRIPT (runs in user's browser, not for WhatsApp crawler) -->
     <script>
-        window.location.replace('../../../index.html?v=theBalladOfMYS');
+        // Auto-detect videoId from current path
+        const pathParts = window.location.pathname.split('/').filter(p => p);
+        const videoId = pathParts[pathParts.length - 2]; // Get folder name (second to last part)
+        window.location.replace('../../../index.html?v=' + videoId);
     </script>
 </body>
 </html>
