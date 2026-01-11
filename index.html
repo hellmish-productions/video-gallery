@@ -88,13 +88,6 @@
             }
         }
         
-        .playlist-card {
-            cursor: pointer;
-        }
-        
-        .playlist-card:hover .thumbnail {
-            transform: scale(1.05);
-        }
         
         .thumbnail {
             position: relative;
@@ -124,26 +117,6 @@
             display: none;
         }
         
-        .playlist-overlay {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 8px 12px;
-            border-bottom-left-radius: 8px;
-            border-top-right-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .playlist-icon-small {
-            width: 18px;
-            height: 18px;
-        }
-        
         .video-title-row {
             margin-top: 12px;
             display: flex;
@@ -152,7 +125,7 @@
             gap: 8px;
         }
         
-        .video-title, .playlist-title {
+        .video-title {
             font-size: 16px;
             font-weight: 500;
             line-height: 1.4;
@@ -164,12 +137,6 @@
             color: #aaa;
             margin-top: 6px;
             line-height: 1.3;
-        }
-        
-        .playlist-subtitle {
-            font-size: 14px;
-            color: #aaa;
-            margin-top: 4px;
         }
         
         .video-duration {
@@ -289,11 +256,6 @@
             font-weight: 500;
         }
         
-        .playlist-info {
-            color: #aaa;
-            font-size: 14px;
-        }
-        
         .controls {
             margin-top: 15px;
             display: flex;
@@ -385,35 +347,6 @@
             background: #e85a28;
         }
 
-        .playlist-icon {
-            width: 20px;
-            height: 20px;
-        }
-
-        .playlist-btn {
-            background: #3ea6ff;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 24px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-
-        .playlist-btn:hover {
-            background: #2a8dd6;
-        }
-
-        .playlists-section {
-            margin-bottom: 30px;
-        }
 
         .version {
             position: fixed;
@@ -453,7 +386,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.6</div>
+    <div class="version">v1.7</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -461,11 +394,6 @@
             <video id="videoPlayer" controls controlsList="nodownload" oncontextmenu="return false;"></video>
             <div class="video-info">
                 <div class="current-video-title" id="currentTitle"></div>
-                <div class="playlist-info" id="playlistInfo"></div>
-            </div>
-            <div class="controls">
-                <button class="control-btn" id="prevBtn" onclick="playPrevious()">← Previous</button>
-                <button class="control-btn" id="nextBtn" onclick="playNext()">Next →</button>
             </div>
         </div>
     </div>
@@ -507,8 +435,15 @@
         
         let allVideos = [];
         let sectionsInOrder = []; // Preserve order from videolist.json
-        
-        // Parse video data from an index.html file
+        let currentIndex = 0;
+
+        const modal = document.getElementById('modal');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const currentTitle = document.getElementById('currentTitle');
+        const shareLinkPopup = document.getElementById('shareLinkPopup');
+        const shareOverlay = document.getElementById('shareOverlay');
+        const shareLinkInput = document.getElementById('shareLinkInput');
+        const copyBtn = document.getElementById('copyBtn');
         async function parseVideoFromHTML(htmlPath, useDefault = false) {
             try {
                 if (useDefault) {
@@ -618,12 +553,8 @@
                     const video = allVideos[videoIndex];
                     document.title = video.title + ' - Hellmish Productions';
                     
-                    // Wait for next frame to ensure DOM is fully ready
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            openVideo(videoIndex, false);
-                        });
-                    });
+                    // Open video without fullscreen (no user gesture)
+                    openVideo(videoIndex, false);
                 }
             }
         }
@@ -672,22 +603,6 @@
             });
         }
 
-        let currentPlaylist = [];
-        let currentPlaylistName = '';
-        let currentIndex = 0;
-        let isPlaylistMode = false;
-
-        const modal = document.getElementById('modal');
-        const videoPlayer = document.getElementById('videoPlayer');
-        const currentTitle = document.getElementById('currentTitle');
-        const playlistInfo = document.getElementById('playlistInfo');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const shareLinkPopup = document.getElementById('shareLinkPopup');
-        const shareOverlay = document.getElementById('shareOverlay');
-        const shareLinkInput = document.getElementById('shareLinkInput');
-        const copyBtn = document.getElementById('copyBtn');
-
         // CONFIGURE YOUR SITE URL HERE
         const SITE_URL = 'https://hellmish-productions.github.io/video-gallery';
 
@@ -701,7 +616,7 @@
                 card.className = 'video-card';
                 
                 card.innerHTML = `
-                    <div class="thumbnail" onclick="openVideo(${startIndex + index}, false)">
+                    <div class="thumbnail" onclick="openVideo(${startIndex + index})">
                         <img src="${video.thumbnail}" alt="${video.title}">
                         <div class="video-duration">${video.duration}</div>
                     </div>
@@ -765,83 +680,40 @@
             shareOverlay.classList.remove('active');
         }
 
-        function openVideo(videoIndex, playlist = false) {
-            if (playlist) {
-                isPlaylistMode = true;
-            } else {
-                isPlaylistMode = false;
-                currentPlaylist = [videoIndex];
-                currentPlaylistName = '';
-                currentIndex = 0;
-            }
-            
+        function openVideo(videoIndex, attemptFullscreen = true) {
             const video = allVideos[videoIndex];
             videoPlayer.src = video.url;
             currentTitle.textContent = video.title;
+            currentIndex = videoIndex;
             
-            if (isPlaylistMode) {
-                const position = currentPlaylist.indexOf(videoIndex) + 1;
-                playlistInfo.textContent = `${position} / ${currentPlaylist.length}`;
-            } else {
-                playlistInfo.textContent = '';
-            }
-            
-            updateButtons();
             modal.classList.add('active');
             
-            // Play video and immediately request fullscreen
-            videoPlayer.play();
+            // Try to auto-play (may be blocked by browser policy)
+            videoPlayer.play().catch(err => {
+                // Auto-play was blocked, user will need to click play button
+                console.log('Auto-play blocked:', err);
+            });
             
-            // Small delay to ensure video is ready, then request fullscreen
-            setTimeout(() => {
-                if (videoPlayer.requestFullscreen) {
-                    videoPlayer.requestFullscreen();
-                } else if (videoPlayer.webkitRequestFullscreen) {
-                    videoPlayer.webkitRequestFullscreen();
-                } else if (videoPlayer.mozRequestFullScreen) {
-                    videoPlayer.mozRequestFullScreen();
-                } else if (videoPlayer.msRequestFullscreen) {
-                    videoPlayer.msRequestFullscreen();
-                }
-            }, 100);
-        }
-
-        function playNext() {
-            if (!isPlaylistMode || currentIndex >= currentPlaylist.length - 1) return;
-            currentIndex++;
-            openVideo(currentPlaylist[currentIndex], true);
-        }
-
-        function playPrevious() {
-            if (!isPlaylistMode || currentIndex <= 0) return;
-            currentIndex--;
-            openVideo(currentPlaylist[currentIndex], true);
-        }
-
-        function updateButtons() {
-            if (!isPlaylistMode) {
-                prevBtn.style.display = 'none';
-                nextBtn.style.display = 'none';
-                return;
+            // Request fullscreen if this was triggered by a user click
+            if (attemptFullscreen) {
+                setTimeout(() => {
+                    if (videoPlayer.requestFullscreen) {
+                        videoPlayer.requestFullscreen();
+                    } else if (videoPlayer.webkitRequestFullscreen) {
+                        videoPlayer.webkitRequestFullscreen();
+                    } else if (videoPlayer.mozRequestFullScreen) {
+                        videoPlayer.mozRequestFullScreen();
+                    } else if (videoPlayer.msRequestFullscreen) {
+                        videoPlayer.msRequestFullscreen();
+                    }
+                }, 100);
             }
-            
-            prevBtn.style.display = 'inline-block';
-            nextBtn.style.display = 'inline-block';
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = currentIndex >= currentPlaylist.length - 1;
         }
-
-        videoPlayer.addEventListener('ended', () => {
-            if (isPlaylistMode && currentIndex < currentPlaylist.length - 1) {
-                playNext();
-            }
-        });
 
         function closeModal() {
             modal.classList.remove('active');
             videoPlayer.pause();
             videoPlayer.src = '';
-            isPlaylistMode = false;
         }
 
         modal.onclick = (e) => {
