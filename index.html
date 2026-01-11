@@ -193,7 +193,7 @@
             border-radius: 4px;
             font-size: 14px;
             transition: all 0.2s;
-            display: flex;
+            display: none;
             align-items: center;
             gap: 4px;
             flex-shrink: 0;
@@ -207,6 +207,13 @@
         .share-btn svg {
             width: 16px;
             height: 16px;
+        }
+        
+        /* Mobile: show share button only */
+        @media (max-width: 768px) {
+            .share-btn {
+                display: flex;
+            }
         }
         
         .modal {
@@ -395,7 +402,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.14</div>
+    <div class="version">v1.15</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -610,15 +617,6 @@
 
         // Load video data on page load
         loadVideoData();
-        
-        // Hide share buttons if native share is not supported
-        if (!navigator.share) {
-            document.addEventListener('DOMContentLoaded', () => {
-                const style = document.createElement('style');
-                style.textContent = '.share-btn { display: none !important; }';
-                document.head.appendChild(style);
-            });
-        }
 
         // Build section grids
         function buildVideoGrid(videos, grid, startIndex) {
@@ -663,43 +661,20 @@
             
             const video = allVideos[videoIndex];
             const shareUrl = `${SITE_URL}/v/${video.section}/${video.videoId}/`;
-            
-            // Get the share button element
             const shareButton = event.currentTarget;
             
-            // Always try to use native share dialog if available
+            // Mobile only - use native share
             if (navigator.share) {
-                const shareData = {
-                    url: shareUrl
-                };
-                
-                navigator.share(shareData)
+                navigator.share({ url: shareUrl })
                     .then(() => {
-                        if (isMobile()) {
-                            showToast('Shared!', shareButton);
-                        }
+                        showToast('Shared!', shareButton);
                     })
                     .catch(err => {
                         // User cancelled - do nothing
-                        if (err.name === 'AbortError') {
-                            return;
+                        if (err.name !== 'AbortError') {
+                            console.error('Share failed:', err);
                         }
-                        
-                        // Permission denied or not allowed (iframe, etc) - hide share buttons and use copy
-                        if (err.name === 'NotAllowedError') {
-                            console.log('Share not allowed, hiding share buttons');
-                            document.querySelectorAll('.share-btn').forEach(btn => btn.style.display = 'none');
-                            copyToClipboard(shareUrl, shareButton);
-                            return;
-                        }
-                        
-                        // Other errors - fallback to copy
-                        console.error('Share failed:', err);
-                        copyToClipboard(shareUrl, shareButton);
                     });
-            } else {
-                // Fallback to copy if share not available
-                copyToClipboard(shareUrl, shareButton);
             }
         }
         
