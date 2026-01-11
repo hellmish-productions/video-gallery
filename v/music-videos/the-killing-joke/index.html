@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Site Name, Title, and Description to be displayed -->
+    <meta property="og:site_name" content="Hellmish Productions">
+    <meta property="og:title" content="The Killing Joke / Hellmish Productions">
+    <meta property="og:description" content="He stalks the rain‑slicked streets, laughter and grief colliding in every step, a man haunted by faces he barely remembers - and the city trembles beneath the shadow of his fractured soul.">
+
+    <!-- Image to display -->
+    <meta property="og:image" content="thumbnail.jpg">
+
+    <!-- No need to change anything here -->
+    <meta property="og:type" content="website" />
+    <meta property="og:image:type" content="image/jpeg">
+
+    <!-- Size of image. Any size up to 300. Anything above 300px will not work in WhatsApp -->
+    <meta property="og:image:width" content="300">
+    <meta property="og:image:height" content="300">
+
+    <!-- Website to visit when clicked in fb or WhatsApp-->
+    <meta property="og:url" content="https://hellmish-productions.github.io/video-gallery/v/music-videos/the-killing-joke/">
+    
+    <link rel="icon" type="image/jpeg" href="../../../img/batman-icon.jpg">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        
+        .loader {
+            font-size: 18px;
+        }
+        
+        .loader::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">Redirecting to video</div>
+    
+    <!-- VIDEO DATA - This is read by the main page -->
+    <script id="video-data" type="application/json">
+    {
+        "videoId": "theKillingJoke",
+        "title": "The Killing Joke",
+        "description": "He stalks the rain‑slicked streets, laughter and grief colliding in every step, a man haunted by faces he barely remembers - and the city trembles beneath the shadow of his fractured soul.",
+        "thumbnail": "v/music-videos/the-killing-joke/thumbnail.jpg",
+        "url": "https://www.dropbox.com/scl/fi/vms8ngrh62d5umu45z7x6/TheKillingJokeFinal.mp4?rlkey=evry1j5ca4x4jf9bgygth0oqg&st=lkwouuyb&raw=1",
+        "duration": "4:25",
+        "section": "music-videos"
+    }
+    </script>
+    
+    <!-- REDIRECT SCRIPT (runs in user's browser, not for WhatsApp crawler) -->
+    <script>
+        window.location.replace('../../../index.html?v=theKillingJoke');
+    </script>
+</body>
+</html>
