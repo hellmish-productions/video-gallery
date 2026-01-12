@@ -343,6 +343,7 @@
             position: relative;
             cursor: pointer;
             background: #000;
+            z-index: 100;
         }
         
         .play-overlay img {
@@ -364,6 +365,8 @@
             align-items: center;
             justify-content: center;
             transition: background 0.2s;
+            z-index: 101;
+            pointer-events: auto;
         }
         
         .play-overlay:hover .play-button-large {
@@ -396,7 +399,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.21</div>
+    <div class="version">v1.22</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -923,9 +926,13 @@
                     // Set animating flag
                     isAnimating = true;
                     
-                    // Start playing
+                    // Start playing immediately (preserves user gesture)
                     videoPlayer.play().catch(err => {
                         console.log('Auto-play blocked:', err);
+                        // If on mobile and auto-play blocked, show play button overlay
+                        if (isMobile()) {
+                            showPlayButtonOverlay(video, videoIndex);
+                        }
                     });
                     
                     // Animate modal to full screen on next frame
@@ -935,7 +942,7 @@
                         modal.style.width = targetWidth + 'px';
                         modal.style.height = targetHeight + 'px';
                         
-                        // After animation completes, reset styles and request fullscreen
+                        // After animation completes, reset styles and request fullscreen (desktop only)
                         setTimeout(() => {
                             modal.style.position = '';
                             modal.style.left = '';
@@ -944,15 +951,17 @@
                             modal.style.height = '';
                             modal.style.transition = '';
                             
-                            // Request fullscreen after animation
-                            if (videoPlayer.requestFullscreen) {
-                                videoPlayer.requestFullscreen();
-                            } else if (videoPlayer.webkitRequestFullscreen) {
-                                videoPlayer.webkitRequestFullscreen();
-                            } else if (videoPlayer.mozRequestFullScreen) {
-                                videoPlayer.mozRequestFullScreen();
-                            } else if (videoPlayer.msRequestFullscreen) {
-                                videoPlayer.msRequestFullscreen();
+                            // Only request fullscreen on desktop
+                            if (!isMobile()) {
+                                if (videoPlayer.requestFullscreen) {
+                                    videoPlayer.requestFullscreen();
+                                } else if (videoPlayer.webkitRequestFullscreen) {
+                                    videoPlayer.webkitRequestFullscreen();
+                                } else if (videoPlayer.mozRequestFullScreen) {
+                                    videoPlayer.mozRequestFullScreen();
+                                } else if (videoPlayer.msRequestFullscreen) {
+                                    videoPlayer.msRequestFullscreen();
+                                }
                             }
                             
                             // Clear animating flag after fullscreen is requested
