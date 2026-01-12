@@ -399,7 +399,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.23</div>
+    <div class="version">v1.24</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -444,6 +444,60 @@
         const videoTitleOverlay = document.getElementById('videoTitleOverlay');
         
         let isAnimating = false; // Flag to track if modal is animating
+        
+        // Touch gesture detection for fullscreen control on mobile
+        let touchStartY = 0;
+        let touchEndY = 0;
+        
+        if (isMobile()) {
+            // Detect swipes on both video and modal
+            const swipeTargets = [videoPlayer, modal];
+            
+            swipeTargets.forEach(target => {
+                target.addEventListener('touchstart', (e) => {
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+                
+                target.addEventListener('touchend', (e) => {
+                    touchEndY = e.changedTouches[0].screenY;
+                    handleSwipe();
+                }, { passive: true });
+            });
+        }
+        
+        function handleSwipe() {
+            const swipeDistance = touchStartY - touchEndY;
+            const swipeThreshold = 50; // Minimum distance for swipe
+            
+            // Swipe up - go fullscreen (if not already fullscreen)
+            if (swipeDistance > swipeThreshold) {
+                if (!document.fullscreenElement) {
+                    if (videoPlayer.requestFullscreen) {
+                        videoPlayer.requestFullscreen();
+                    } else if (videoPlayer.webkitRequestFullscreen) {
+                        videoPlayer.webkitRequestFullscreen();
+                    } else if (videoPlayer.mozRequestFullScreen) {
+                        videoPlayer.mozRequestFullScreen();
+                    }
+                }
+            }
+            // Swipe down - exit fullscreen OR close modal
+            else if (swipeDistance < -swipeThreshold) {
+                if (document.fullscreenElement) {
+                    // In fullscreen - exit fullscreen
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    }
+                } else {
+                    // Not in fullscreen - close modal
+                    closeModal();
+                }
+            }
+        }
         async function parseVideoFromHTML(htmlPath, useDefault = false) {
             try {
                 if (useDefault) {
@@ -846,8 +900,8 @@
             // Lock body scroll on mobile
             if (isMobile()) {
                 document.body.style.overflow = 'hidden';
-                document.body.style.position = 'fixed';
-                document.body.style.width = '100%';
+                document.body.style.height = '100vh';
+                document.body.style.touchAction = 'none';
                 
                 // Add history entry so back button closes modal
                 history.pushState({ modalOpen: true }, '');
@@ -1050,28 +1104,56 @@
         }
 
         function closeModal() {
-            modal.classList.remove('active');
-            videoPlayer.pause();
-            videoPlayer.src = '';
+            // Block interactions during closing animation
+            isAnimating = true;
             
-            // Remove any play overlay
-            const existingOverlay = document.querySelector('.play-overlay');
-            if (existingOverlay) {
-                existingOverlay.remove();
-            }
+            // Calculate bottom center position
+            const targetWidth = 0;
+            const targetHeight = 0;
+            const targetLeft = window.innerWidth / 2;
+            const targetTop = window.innerHeight;
             
-            // Make sure video is visible
-            videoPlayer.style.display = 'block';
+            // Animate modal shrinking to bottom center
+            modal.style.position = 'fixed';
+            modal.style.left = targetLeft + 'px';
+            modal.style.top = targetTop + 'px';
+            modal.style.width = targetWidth + 'px';
+            modal.style.height = targetHeight + 'px';
+            modal.style.transition = 'all 0.3s ease-in';
             
-            // Unlock body scroll on mobile
-            if (isMobile()) {
-                document.body.style.overflow = '';
-                document.body.style.position = '';
-                document.body.style.width = '';
-            }
-            
-            // Clear animating flag if modal was closed during animation
-            isAnimating = false;
+            // After animation completes, clean up
+            setTimeout(() => {
+                modal.classList.remove('active');
+                videoPlayer.pause();
+                videoPlayer.src = '';
+                
+                // Remove any play overlay
+                const existingOverlay = document.querySelector('.play-overlay');
+                if (existingOverlay) {
+                    existingOverlay.remove();
+                }
+                
+                // Make sure video is visible
+                videoPlayer.style.display = 'block';
+                
+                // Reset modal styles
+                modal.style.position = '';
+                modal.style.left = '';
+                modal.style.top = '';
+                modal.style.width = '';
+                modal.style.height = '';
+                modal.style.transition = '';
+                
+                // Unlock body scroll on mobile
+                if (isMobile()) {
+                    document.body.style.overflow = '';
+                    document.body.style.height = '';
+                    document.body.style.touchAction = '';
+                }
+                
+                // Clear animating flag
+                isAnimating = false;
+            }, 300);
         }
 
         modal.onclick = (e) => {
