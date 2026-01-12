@@ -396,7 +396,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.20</div>
+    <div class="version">v1.21</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -571,6 +571,10 @@
                     
                     // Open video without fullscreen (no user gesture)
                     openVideo(videoIndex, false);
+                    
+                    // Remove v parameter from URL so refresh doesn't reopen video
+                    const cleanUrl = window.location.origin + window.location.pathname;
+                    window.history.replaceState({}, '', cleanUrl);
                 }
             }
         }
