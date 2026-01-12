@@ -727,7 +727,7 @@
             event.stopPropagation();
             
             const video = allVideos[videoIndex];
-            const fullUrl = `${SITE_URL}/?v=${video.videoId}`;
+            const fullUrl = `${SITE_URL}/v/${video.section}/${video.videoId}/`;
             const shareButton = event.currentTarget;
             
             try {
@@ -768,7 +768,7 @@
             event.stopPropagation();
             
             const video = allVideos[videoIndex];
-            const fullUrl = `${SITE_URL}/?v=${video.videoId}`;
+            const fullUrl = `${SITE_URL}/v/${video.section}/${video.videoId}/`;
             
             // Get the copy button element
             const copyButton = event.currentTarget;
