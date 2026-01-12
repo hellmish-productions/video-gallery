@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Gallery</title>
+    <title>Hellmish Productions</title>
     <link rel="icon" type="image/jpeg" href="https://hellmish-productions.github.io/video-gallery/img/batman-icon.jpg">
     
     <!-- Default Open Graph tags -->
@@ -622,10 +622,6 @@
             if (videoId) {
                 const videoIndex = allVideos.findIndex(v => v.videoId === videoId);
                 if (videoIndex !== -1) {
-                    // Update page title
-                    const video = allVideos[videoIndex];
-                    document.title = video.title + ' - Hellmish Productions';
-                    
                     // Open video without fullscreen (no user gesture)
                     openVideo(videoIndex, false);
                     
@@ -1088,18 +1084,20 @@
                 videoPlayer.style.display = 'block';
                 videoPlayer.play();
                 
-                // Request fullscreen
-                setTimeout(() => {
-                    if (videoPlayer.requestFullscreen) {
-                        videoPlayer.requestFullscreen();
-                    } else if (videoPlayer.webkitRequestFullscreen) {
-                        videoPlayer.webkitRequestFullscreen();
-                    } else if (videoPlayer.mozRequestFullScreen) {
-                        videoPlayer.mozRequestFullScreen();
-                    } else if (videoPlayer.msRequestFullscreen) {
-                        videoPlayer.msRequestFullscreen();
-                    }
-                }, 100);
+                // Request fullscreen only on desktop
+                if (!isMobile()) {
+                    setTimeout(() => {
+                        if (videoPlayer.requestFullscreen) {
+                            videoPlayer.requestFullscreen();
+                        } else if (videoPlayer.webkitRequestFullscreen) {
+                            videoPlayer.webkitRequestFullscreen();
+                        } else if (videoPlayer.mozRequestFullScreen) {
+                            videoPlayer.mozRequestFullScreen();
+                        } else if (videoPlayer.msRequestFullscreen) {
+                            videoPlayer.msRequestFullscreen();
+                        }
+                    }, 100);
+                }
             };
         }
 
