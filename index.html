@@ -402,7 +402,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.17</div>
+    <div class="version">v1.18</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -825,38 +825,28 @@
             currentTitle.textContent = video.title;
             currentIndex = videoIndex;
             
+            modal.classList.add('active');
+            
             if (attemptFullscreen) {
-                // Direct user click - try fullscreen immediately
+                // Direct user click - auto-play and fullscreen
                 videoPlayer.play().catch(err => {
                     console.log('Auto-play blocked:', err);
                 });
                 
                 // Request fullscreen immediately (no delay)
-                const fullscreenPromise = videoPlayer.requestFullscreen ? videoPlayer.requestFullscreen() :
-                                         videoPlayer.webkitRequestFullscreen ? videoPlayer.webkitRequestFullscreen() :
-                                         videoPlayer.mozRequestFullScreen ? videoPlayer.mozRequestFullScreen() :
-                                         videoPlayer.msRequestFullscreen ? videoPlayer.msRequestFullscreen() : null;
-                
-                if (fullscreenPromise) {
-                    fullscreenPromise.catch(() => {
-                        // Fullscreen failed, show modal
-                        modal.classList.add('active');
-                    });
-                } else {
-                    // Fullscreen not supported, show modal
-                    modal.classList.add('active');
-                }
-                
-                // Listen for fullscreen exit to show modal
-                document.addEventListener('fullscreenchange', function onFullscreenChange() {
-                    if (!document.fullscreenElement) {
-                        modal.classList.add('active');
-                        document.removeEventListener('fullscreenchange', onFullscreenChange);
+                requestAnimationFrame(() => {
+                    if (videoPlayer.requestFullscreen) {
+                        videoPlayer.requestFullscreen();
+                    } else if (videoPlayer.webkitRequestFullscreen) {
+                        videoPlayer.webkitRequestFullscreen();
+                    } else if (videoPlayer.mozRequestFullScreen) {
+                        videoPlayer.mozRequestFullScreen();
+                    } else if (videoPlayer.msRequestFullscreen) {
+                        videoPlayer.msRequestFullscreen();
                     }
                 });
             } else {
-                // Coming from shared link - show modal with play button overlay
-                modal.classList.add('active');
+                // Coming from shared link - show play button overlay
                 showPlayButtonOverlay(video, videoIndex);
             }
         }
