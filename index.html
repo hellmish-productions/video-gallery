@@ -367,7 +367,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.26</div>
+    <div class="version">v1.27</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -723,39 +723,72 @@
             });
         }
 
-        function shareVideo(videoIndex, event) {
+        async function shareVideo(videoIndex, event) {
             event.stopPropagation();
             
             const video = allVideos[videoIndex];
-            const shareUrl = `${SITE_URL}/v/${video.section}/${video.videoId}/`;
+            const fullUrl = `${SITE_URL}/?v=${video.videoId}`;
             const shareButton = event.currentTarget;
             
-            // Mobile only - use native share
-            if (navigator.share) {
-                navigator.share({ url: shareUrl })
-                    .then(() => {
-                        showToast('Shared!', shareButton);
-                    })
-                    .catch(err => {
-                        // User cancelled - do nothing
-                        if (err.name !== 'AbortError') {
-                            console.error('Share failed:', err);
-                        }
-                    });
+            try {
+                // Use is.gd API with JSON format
+                const response = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(fullUrl)}`);
+                const data = await response.json();
+                
+                const urlToShare = data.shorturl || fullUrl;
+                
+                // Mobile only - use native share
+                if (navigator.share) {
+                    navigator.share({ url: urlToShare })
+                        .then(() => {
+                            showToast('Shared!', shareButton);
+                        })
+                        .catch(err => {
+                            // User cancelled - do nothing
+                            if (err.name !== 'AbortError') {
+                                console.error('Share failed:', err);
+                            }
+                        });
+                }
+            } catch (error) {
+                console.error('Error shortening URL:', error);
+                // Fallback to full URL if shortening fails
+                if (navigator.share) {
+                    navigator.share({ url: fullUrl })
+                        .catch(err => {
+                            if (err.name !== 'AbortError') {
+                                console.error('Share failed:', err);
+                            }
+                        });
+                }
             }
         }
         
-        function copyVideoLink(videoIndex, event) {
+        async function copyVideoLink(videoIndex, event) {
             event.stopPropagation();
             
             const video = allVideos[videoIndex];
-            const shareUrl = `${SITE_URL}/v/${video.section}/${video.videoId}/`;
+            const fullUrl = `${SITE_URL}/?v=${video.videoId}`;
             
             // Get the copy button element
             const copyButton = event.currentTarget;
             
-            // Always copy to clipboard and show toast
-            copyToClipboard(shareUrl, copyButton);
+            try {
+                // Use is.gd API with JSONP to avoid CORS issues
+                const response = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(fullUrl)}`);
+                const data = await response.json();
+                
+                if (data.shorturl) {
+                    // Copy shortened URL to clipboard
+                    copyToClipboard(data.shorturl, copyButton);
+                } else {
+                    throw new Error('No short URL returned');
+                }
+            } catch (error) {
+                console.error('Error shortening URL:', error);
+                // Fallback to full URL if shortening fails
+                copyToClipboard(fullUrl, copyButton);
+            }
         }
         
         function copyToClipboard(url, shareButton) {
