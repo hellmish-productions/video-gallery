@@ -6,12 +6,16 @@
     <title>Hellmish Productions</title>
     <link rel="icon" type="image/jpeg" href="https://hellmish-productions.github.io/video-gallery/img/batman-icon.jpg">
     
-    <!-- Default Open Graph tags -->
-    <meta property="og:title" content="Hellmish Productions - Video Gallery">
-    <meta property="og:description" content="Watch our collection of music videos and original content">
-    <meta property="og:image" content="https://hellmish-productions.github.io/video-gallery/img/hellmish-productions-banner.png">
-    <meta property="og:url" content="https://hellmish-productions.github.io/video-gallery">
+    <!-- Open Graph tags for sharing -->
+    <meta property="og:title" content="Hellmish Productions">
+    <meta property="og:description" content="Come see Batman as you've never dreamed!! And some other cool stuff as well...">
+    <meta property="og:image" content="https://hellmish-productions.github.io/video-gallery/img/hellmish-productions-logo.jpg">
+    <meta property="og:url" content="https://hellmish-productions.github.io/video-gallery/">
+    <meta property="og:site_name" content="Hellmish Productions">
     <meta property="og:type" content="website">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="300">
+    <meta property="og:image:height" content="300">
     
     <style>
         @font-face {
@@ -290,42 +294,6 @@
             display: none;
         }
         
-        
-        .controls {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .control-btn {
-            background: #272727;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-        
-        .control-btn:hover {
-            background: #3f3f3f;
-        }
-        
-        .control-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .random-btn {
-            background: #ff6b35;
-        }
-
-        .random-btn:hover {
-            background: #e85a28;
-        }
-
 
         .version {
             position: fixed;
@@ -399,7 +367,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.25</div>
+    <div class="version">v1.26</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -437,7 +405,6 @@
         
         let allVideos = [];
         let sectionsInOrder = []; // Preserve order from videolist.json
-        let currentIndex = 0;
 
         const modal = document.getElementById('modal');
         const videoPlayer = document.getElementById('videoPlayer');
@@ -891,7 +858,6 @@
         function openVideo(videoIndex, attemptFullscreen = true) {
             const video = allVideos[videoIndex];
             videoPlayer.src = video.url;
-            currentIndex = videoIndex;
             
             // Lock body scroll on mobile
             if (isMobile()) {
@@ -1167,7 +1133,6 @@
                     return;
                 }
                 closeModal();
-                closeSharePopup();
             }
         });
 
