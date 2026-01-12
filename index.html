@@ -825,28 +825,75 @@
             currentTitle.textContent = video.title;
             currentIndex = videoIndex;
             
-            modal.classList.add('active');
-            
             if (attemptFullscreen) {
-                // Direct user click - auto-play and fullscreen
-                videoPlayer.play().catch(err => {
-                    console.log('Auto-play blocked:', err);
-                });
+                // Find the clicked thumbnail to get its position
+                const thumbnails = document.querySelectorAll('.thumbnail');
+                const clickedThumbnail = thumbnails[videoIndex];
                 
-                // Request fullscreen immediately (no delay)
-                requestAnimationFrame(() => {
-                    if (videoPlayer.requestFullscreen) {
-                        videoPlayer.requestFullscreen();
-                    } else if (videoPlayer.webkitRequestFullscreen) {
-                        videoPlayer.webkitRequestFullscreen();
-                    } else if (videoPlayer.mozRequestFullScreen) {
-                        videoPlayer.mozRequestFullScreen();
-                    } else if (videoPlayer.msRequestFullscreen) {
-                        videoPlayer.msRequestFullscreen();
-                    }
-                });
+                if (clickedThumbnail) {
+                    const rect = clickedThumbnail.getBoundingClientRect();
+                    
+                    // Position modal at thumbnail location
+                    modal.style.position = 'fixed';
+                    modal.style.left = rect.left + 'px';
+                    modal.style.top = rect.top + 'px';
+                    modal.style.width = rect.width + 'px';
+                    modal.style.height = rect.height + 'px';
+                    modal.style.transition = 'all 0.3s ease-out';
+                    
+                    // Show modal at thumbnail position
+                    modal.classList.add('active');
+                    
+                    // Start playing
+                    videoPlayer.play().catch(err => {
+                        console.log('Auto-play blocked:', err);
+                    });
+                    
+                    // Animate to fullscreen on next frame
+                    requestAnimationFrame(() => {
+                        modal.style.left = '0';
+                        modal.style.top = '0';
+                        modal.style.width = '100vw';
+                        modal.style.height = '100vh';
+                        
+                        // After animation, request fullscreen
+                        setTimeout(() => {
+                            modal.style.position = '';
+                            modal.style.transition = '';
+                            
+                            if (videoPlayer.requestFullscreen) {
+                                videoPlayer.requestFullscreen();
+                            } else if (videoPlayer.webkitRequestFullscreen) {
+                                videoPlayer.webkitRequestFullscreen();
+                            } else if (videoPlayer.mozRequestFullScreen) {
+                                videoPlayer.mozRequestFullScreen();
+                            } else if (videoPlayer.msRequestFullscreen) {
+                                videoPlayer.msRequestFullscreen();
+                            }
+                        }, 300);
+                    });
+                } else {
+                    // Fallback if thumbnail not found
+                    modal.classList.add('active');
+                    videoPlayer.play().catch(err => {
+                        console.log('Auto-play blocked:', err);
+                    });
+                    
+                    requestAnimationFrame(() => {
+                        if (videoPlayer.requestFullscreen) {
+                            videoPlayer.requestFullscreen();
+                        } else if (videoPlayer.webkitRequestFullscreen) {
+                            videoPlayer.webkitRequestFullscreen();
+                        } else if (videoPlayer.mozRequestFullScreen) {
+                            videoPlayer.mozRequestFullScreen();
+                        } else if (videoPlayer.msRequestFullscreen) {
+                            videoPlayer.msRequestFullscreen();
+                        }
+                    });
+                }
             } else {
-                // Coming from shared link - show play button overlay
+                // Coming from shared link - show modal with play button overlay
+                modal.classList.add('active');
                 showPlayButtonOverlay(video, videoIndex);
             }
         }
