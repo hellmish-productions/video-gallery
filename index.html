@@ -399,7 +399,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.22</div>
+    <div class="version">v1.23</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -843,6 +843,16 @@
             videoPlayer.src = video.url;
             currentIndex = videoIndex;
             
+            // Lock body scroll on mobile
+            if (isMobile()) {
+                document.body.style.overflow = 'hidden';
+                document.body.style.position = 'fixed';
+                document.body.style.width = '100%';
+                
+                // Add history entry so back button closes modal
+                history.pushState({ modalOpen: true }, '');
+            }
+            
             // Set video title
             videoTitleOverlay.textContent = video.title;
             
@@ -929,10 +939,8 @@
                     // Start playing immediately (preserves user gesture)
                     videoPlayer.play().catch(err => {
                         console.log('Auto-play blocked:', err);
-                        // If on mobile and auto-play blocked, show play button overlay
-                        if (isMobile()) {
-                            showPlayButtonOverlay(video, videoIndex);
-                        }
+                        // Don't show play button overlay for thumbnail clicks
+                        // It should only appear for shared links (attemptFullscreen = false)
                     });
                     
                     // Animate modal to full screen on next frame
@@ -995,6 +1003,15 @@
         }
         
         function showPlayButtonOverlay(video, videoIndex) {
+            // Remove any existing play overlay first
+            const existingOverlay = document.querySelector('.play-overlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
+            
+            // Make sure video is visible
+            videoPlayer.style.display = 'block';
+            
             // Create overlay with thumbnail and play button
             const overlay = document.createElement('div');
             overlay.className = 'play-overlay';
@@ -1036,6 +1053,25 @@
             modal.classList.remove('active');
             videoPlayer.pause();
             videoPlayer.src = '';
+            
+            // Remove any play overlay
+            const existingOverlay = document.querySelector('.play-overlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
+            
+            // Make sure video is visible
+            videoPlayer.style.display = 'block';
+            
+            // Unlock body scroll on mobile
+            if (isMobile()) {
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
+            }
+            
+            // Clear animating flag if modal was closed during animation
+            isAnimating = false;
         }
 
         modal.onclick = (e) => {
@@ -1058,6 +1094,23 @@
         document.addEventListener('contextmenu', (e) => {
             if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') {
                 e.preventDefault();
+            }
+        });
+        
+        // Handle back button on mobile
+        let preventBackDuringAnimation = false;
+        
+        window.addEventListener('popstate', (e) => {
+            if (isMobile() && modal.classList.contains('active')) {
+                // Ignore back button during animation
+                if (isAnimating) {
+                    // Re-push state to keep modal open
+                    history.pushState({ modalOpen: true }, '');
+                    return;
+                }
+                
+                // Close modal normally
+                closeModal();
             }
         });
 
