@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Gallery</title>
-    <link rel="icon" type="image/jpeg" href="img/batman-icon.jpg">
+    <link rel="icon" type="image/jpeg" href="https://hellmish-productions.github.io/video-gallery/img/batman-icon.jpg">
     
     <!-- Default Open Graph tags -->
     <meta property="og:title" content="Hellmish Productions - Video Gallery">
@@ -16,7 +16,7 @@
     <style>
         @font-face {
             font-family: 'Batman Forever';
-            src: url('fonts/batmfa_.ttf') format('truetype');
+            src: url('https://hellmish-productions.github.io/video-gallery/fonts/batmfa_.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
@@ -227,7 +227,6 @@
             z-index: 1000;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
         
         .modal.active {
@@ -235,36 +234,44 @@
         }
         
         .modal-content {
-            max-width: 1200px;
             width: 100%;
+            height: 100%;
             position: relative;
-        }
-        
-        .close-btn {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 36px;
-            cursor: pointer;
-            padding: 0;
-            width: 40px;
-            height: 40px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
+            align-items: center;
         }
         
-        .close-btn:hover {
-            color: #ff0000;
-        }
         
         video {
             width: 100%;
-            border-radius: 8px;
+            height: 100%;
             background: #000;
+            display: block;
+            object-fit: contain;
+        }
+        
+        .video-title-overlay {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px 10px 20px;
+            border-radius: 0 6px 6px 0;
+            font-size: 20px;
+            font-weight: 500;
+            font-family: 'Batman Forever', sans-serif;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            max-width: 60%;
+            z-index: 2147483647;
+        }
+        
+        .video-title-overlay.show {
+            opacity: 1;
         }
         
         video::-webkit-media-controls-enclosure {
@@ -283,19 +290,6 @@
             display: none;
         }
         
-        .video-info {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .current-video-title {
-            font-size: 18px;
-            font-weight: 500;
-        }
         
         .controls {
             margin-top: 15px;
@@ -363,9 +357,9 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.7);
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
+            border-radius: 12px;
+            width: 80px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -398,19 +392,16 @@
 </head>
 <body>
     <div class="container">
-        <img src="img/hellmish-productions-banner.png" alt="Hellmish Productions" class="banner">
+        <img src="https://hellmish-productions.github.io/video-gallery/img/hellmish-productions-banner.png" alt="Hellmish Productions" class="banner">
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.19</div>
+    <div class="version">v1.20</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()">&times;</button>
             <video id="videoPlayer" controls controlsList="nodownload" oncontextmenu="return false;"></video>
-            <div class="video-info">
-                <div class="current-video-title" id="currentTitle"></div>
-            </div>
+            <div class="video-title-overlay" id="videoTitleOverlay"></div>
         </div>
     </div>
 
@@ -447,7 +438,9 @@
 
         const modal = document.getElementById('modal');
         const videoPlayer = document.getElementById('videoPlayer');
-        const currentTitle = document.getElementById('currentTitle');
+        const videoTitleOverlay = document.getElementById('videoTitleOverlay');
+        
+        let isAnimating = false; // Flag to track if modal is animating
         async function parseVideoFromHTML(htmlPath, useDefault = false) {
             try {
                 if (useDefault) {
@@ -460,7 +453,7 @@
                         videoId: videoFolder,
                         title: `Video ${videoFolder}`,
                         description: "This and that and the other.",
-                        thumbnail: `v/${section}/${videoFolder}/thumbnail.jpg`,
+                        thumbnail: `${SITE_URL}/v/${section}/${videoFolder}/thumbnail.jpg`,
                         url: "https://www.dropbox.com/scl/fi/zcdzkg6brgsau8siso8ti/MacBatman.mp4?rlkey=j3q2tbzdmtq9qp0jzuffo3pwk&st=maz3c19i&raw=1",
                         duration: "6:66",
                         section: section
@@ -479,14 +472,25 @@
                 const videoData = JSON.parse(jsonMatch[1]);
                 
                 // Extract path parts for auto-generation
+                // Handle both relative (v/section/video) and absolute (https://.../v/section/video) paths
                 const pathParts = htmlPath.split('/');
-                const section = pathParts[1]; // e.g., "music-videos"
-                const videoFolder = pathParts[2]; // e.g., "macbatman"
+                let section, videoFolder;
+                
+                if (htmlPath.startsWith('http')) {
+                    // Absolute URL: find 'v' and extract from there
+                    const vIndex = pathParts.indexOf('v');
+                    section = pathParts[vIndex + 1]; // e.g., "music-videos"
+                    videoFolder = pathParts[vIndex + 2]; // e.g., "macbatman"
+                } else {
+                    // Relative path
+                    section = pathParts[1];
+                    videoFolder = pathParts[2];
+                }
                 
                 // Always auto-generate these fields
                 videoData.videoId = videoFolder;
                 videoData.section = section;
-                videoData.thumbnail = `v/${section}/${videoFolder}/thumbnail.jpg`;
+                videoData.thumbnail = `${SITE_URL}/v/${section}/${videoFolder}/thumbnail.jpg`;
                 
                 // Extract title from og:title meta tag (remove " - Hellmish Productions" suffix)
                 const titleMatch = html.match(/<meta property="og:title" content="([^"]+)"/);
@@ -517,7 +521,7 @@
             let usingDefault = false;
             
             try {
-                const response = await fetch('videolist.json');
+                const response = await fetch('https://hellmish-productions.github.io/video-gallery/videolist.json');
                 if (!response.ok) throw new Error('videolist.json not found');
                 videoList = await response.json();
             } catch (error) {
@@ -525,6 +529,14 @@
                 videoList = defaultVideoList;
                 usingDefault = true;
             }
+            
+            // Convert relative paths to absolute URLs
+            videoList = videoList.map(path => {
+                if (path.startsWith('http')) {
+                    return path; // Already absolute
+                }
+                return `${SITE_URL}/${path}`;
+            });
             
             // Fetch and parse all video HTML files
             const videoPromises = videoList.map(path => parseVideoFromHTML(path, usingDefault));
@@ -620,7 +632,7 @@
             // Add manifest link
             const manifestLink = document.createElement('link');
             manifestLink.rel = 'manifest';
-            manifestLink.href = 'manifest.json';
+            manifestLink.href = 'https://hellmish-productions.github.io/video-gallery/manifest.json';
             document.head.appendChild(manifestLink);
             
             // Add theme color
@@ -822,8 +834,62 @@
         function openVideo(videoIndex, attemptFullscreen = true) {
             const video = allVideos[videoIndex];
             videoPlayer.src = video.url;
-            currentTitle.textContent = video.title;
             currentIndex = videoIndex;
+            
+            // Set video title
+            videoTitleOverlay.textContent = video.title;
+            
+            // Don't show title initially - wait for animation to complete
+            videoTitleOverlay.classList.remove('show');
+            
+            let titleTimeout;
+            let canShowTitle = false;
+            
+            // Enable title after animation completes + 120ms
+            const animationDelay = attemptFullscreen ? 300 + 120 : 120;
+            setTimeout(() => {
+                canShowTitle = true;
+                // Show title initially for 3 seconds
+                videoTitleOverlay.classList.add('show');
+                hideTitle();
+            }, animationDelay);
+            
+            const hideTitle = () => {
+                clearTimeout(titleTimeout);
+                titleTimeout = setTimeout(() => {
+                    if (!videoPlayer.paused) {
+                        videoTitleOverlay.classList.remove('show');
+                    }
+                }, 3000);
+            };
+            
+            // Show title when controls are shown (user moves mouse or touches screen)
+            const showTitle = () => {
+                if (canShowTitle) {
+                    videoTitleOverlay.classList.add('show');
+                    hideTitle();
+                }
+            };
+            
+            // Listen for mouse movement and touch
+            videoPlayer.addEventListener('mousemove', showTitle);
+            videoPlayer.addEventListener('touchstart', showTitle);
+            videoPlayer.addEventListener('click', showTitle);
+            
+            // Show title when paused
+            videoPlayer.addEventListener('pause', () => {
+                if (canShowTitle) {
+                    clearTimeout(titleTimeout);
+                    videoTitleOverlay.classList.add('show');
+                }
+            });
+            
+            // Hide title when playing (after delay)
+            videoPlayer.addEventListener('play', () => {
+                if (canShowTitle) {
+                    hideTitle();
+                }
+            });
             
             if (attemptFullscreen) {
                 // Find the clicked thumbnail to get its position
@@ -832,6 +898,12 @@
                 
                 if (clickedThumbnail) {
                     const rect = clickedThumbnail.getBoundingClientRect();
+                    
+                    // Calculate 100% of screen dimensions (full screen)
+                    const targetWidth = window.innerWidth;
+                    const targetHeight = window.innerHeight;
+                    const targetLeft = 0;
+                    const targetTop = 0;
                     
                     // Position modal at thumbnail location
                     modal.style.position = 'fixed';
@@ -844,23 +916,31 @@
                     // Show modal at thumbnail position
                     modal.classList.add('active');
                     
+                    // Set animating flag
+                    isAnimating = true;
+                    
                     // Start playing
                     videoPlayer.play().catch(err => {
                         console.log('Auto-play blocked:', err);
                     });
                     
-                    // Animate to fullscreen on next frame
+                    // Animate modal to full screen on next frame
                     requestAnimationFrame(() => {
-                        modal.style.left = '0';
-                        modal.style.top = '0';
-                        modal.style.width = '100vw';
-                        modal.style.height = '100vh';
+                        modal.style.left = targetLeft + 'px';
+                        modal.style.top = targetTop + 'px';
+                        modal.style.width = targetWidth + 'px';
+                        modal.style.height = targetHeight + 'px';
                         
-                        // After animation, request fullscreen
+                        // After animation completes, reset styles and request fullscreen
                         setTimeout(() => {
                             modal.style.position = '';
+                            modal.style.left = '';
+                            modal.style.top = '';
+                            modal.style.width = '';
+                            modal.style.height = '';
                             modal.style.transition = '';
                             
+                            // Request fullscreen after animation
                             if (videoPlayer.requestFullscreen) {
                                 videoPlayer.requestFullscreen();
                             } else if (videoPlayer.webkitRequestFullscreen) {
@@ -870,6 +950,9 @@
                             } else if (videoPlayer.msRequestFullscreen) {
                                 videoPlayer.msRequestFullscreen();
                             }
+                            
+                            // Clear animating flag after fullscreen is requested
+                            isAnimating = false;
                         }, 300);
                     });
                 } else {
@@ -950,6 +1033,10 @@
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                // Ignore ESC key during animation
+                if (isAnimating) {
+                    return;
+                }
                 closeModal();
                 closeSharePopup();
             }
