@@ -17,6 +17,10 @@
     <meta property="og:image:width" content="300">
     <meta property="og:image:height" content="300">
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <style>
         @font-face {
             font-family: 'Batman Forever';
@@ -175,6 +179,27 @@
             color: #aaa;
             margin-top: 6px;
             line-height: 1.3;
+        }
+        
+        .view-count {
+            font-size: 14px;
+            color: #888;
+            margin-right: 0px;
+            margin-left: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .view-count svg {
+            flex-shrink: 0;
+            position: relative;
+            top: -2px;
+        }
+        
+        .view-count-number {
+            position: relative;
+            top: -2px;
         }
         
         .video-duration {
@@ -367,7 +392,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.28</div>
+    <div class="version">v1.29</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -377,6 +402,33 @@
     </div>
 
     <script>
+        // ============================================
+        // INITIALIZE FIREBASE FIRST
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBy9JxDX7wIIXuLAwcZiMrSR86qIKYwLbU",
+            authDomain: "hellmish-productions.firebaseapp.com",
+            databaseURL: "https://hellmish-productions-default-rtdb.firebaseio.com",
+            projectId: "hellmish-productions",
+            storageBucket: "hellmish-productions.firebasestorage.app",
+            messagingSenderId: "305787404974",
+            appId: "1:305787404974:web:f6dd36bc8c718d3ddba33f"
+        };
+        
+        let firebaseReady = false;
+        
+        // Try to initialize Firebase once
+        try {
+            if (typeof firebase !== 'undefined') {
+                firebase.initializeApp(firebaseConfig);
+                firebaseReady = true;
+                console.log('Firebase initialized');
+            }
+        } catch (error) {
+            console.error('Firebase initialization failed:', error);
+            firebaseReady = false;
+        }
+        
         // ============================================
         // LOAD VIDEO DATA FROM VIDEOLIST.JSON
         // ============================================
@@ -412,6 +464,25 @@
         
         let isAnimating = false; // Flag to track if modal is animating
         
+        // Play video and increment view count
+        function playAndCount(videoIndex) {
+            const video = allVideos[videoIndex];
+            
+            // Increment view count in Firebase only if available
+            if (firebaseReady) {
+                try {
+                    firebase.database().ref(`views/${video.videoId}`).transaction(current => (current || 0) + 1);
+                } catch (error) {
+                    console.error('Failed to increment view count:', error);
+                }
+            }
+            
+            // Play the video
+            videoPlayer.play().catch(err => {
+                console.log('Auto-play blocked:', err);
+            });
+        }
+        
         // Touch gesture detection for fullscreen control on mobile
         let touchStartY = 0;
         let touchEndY = 0;
@@ -434,7 +505,12 @@
         
         function handleSwipe() {
             const swipeDistance = touchStartY - touchEndY;
-            const swipeThreshold = 50; // Minimum distance for swipe
+            const swipeThreshold = 20; // Minimum distance for swipe
+            
+            // Ignore swipes during closing animation
+            if (isAnimating) {
+                return;
+            }
             
             // Swipe up - go fullscreen (if not already fullscreen)
             if (swipeDistance > swipeThreshold) {
@@ -470,12 +546,22 @@
                 if (useDefault) {
                     // Extract video number and section from path
                     const pathParts = htmlPath.split('/');
-                    const section = pathParts[1];
-                    const videoFolder = pathParts[2];
+                    let section, videoFolder;
+                    
+                    if (htmlPath.startsWith('http')) {
+                        // Absolute URL: find 'v' and extract from there
+                        const vIndex = pathParts.indexOf('v');
+                        section = pathParts[vIndex + 1];
+                        videoFolder = pathParts[vIndex + 2];
+                    } else {
+                        // Relative path
+                        section = pathParts[1];
+                        videoFolder = pathParts[2];
+                    }
                     
                     return {
                         videoId: videoFolder,
-                        title: `Video ${videoFolder}`,
+                        title: videoFolder,
                         description: "This and that and the other.",
                         thumbnail: `${SITE_URL}/v/${section}/${videoFolder}/thumbnail.jpg`,
                         url: "https://www.dropbox.com/scl/fi/zcdzkg6brgsau8siso8ti/MacBatman.mp4?rlkey=j3q2tbzdmtq9qp0jzuffo3pwk&st=maz3c19i&raw=1",
@@ -699,6 +785,12 @@
                     <div class="video-title-row">
                         <div class="video-title">${video.title}</div>
                         <div class="action-buttons">
+                            <div class="view-count" data-video-id="${video.videoId}" style="display: none;">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                                <span class="view-count-number">0</span>
+                            </div>
                             <button class="copy-btn-desktop" onclick="copyVideoLink(${startIndex + index}, event)" title="Copy Link">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -720,7 +812,34 @@
                 `;
                 
                 grid.appendChild(card);
+                
+                // Load view count for this video
+                loadViewCount(video.videoId);
             });
+        }
+        
+        // Load view count from Firebase for a specific video
+        function loadViewCount(videoId) {
+            const viewCountElement = document.querySelector(`[data-video-id="${videoId}"]`);
+            const viewCountNumber = viewCountElement ? viewCountElement.querySelector('.view-count-number') : null;
+            
+            if (!firebaseReady || !viewCountNumber) {
+                // Firebase not ready - keep hidden
+                return;
+            }
+            
+            try {
+                firebase.database().ref(`views/${videoId}`).on('value', (snapshot) => {
+                    const count = snapshot.val() || 0;
+                    if (viewCountNumber && viewCountElement) {
+                        viewCountNumber.textContent = count.toLocaleString();
+                        viewCountElement.style.display = 'flex';
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to load view count:', error);
+                // Keep hidden on error
+            }
         }
 
         async function shareVideo(videoIndex, event) {
@@ -985,12 +1104,8 @@
                     // Set animating flag
                     isAnimating = true;
                     
-                    // Start playing immediately (preserves user gesture)
-                    videoPlayer.play().catch(err => {
-                        console.log('Auto-play blocked:', err);
-                        // Don't show play button overlay for thumbnail clicks
-                        // It should only appear for shared links (attemptFullscreen = false)
-                    });
+                    // Start playing immediately (preserves user gesture) and count view
+                    playAndCount(videoIndex);
                     
                     // Animate modal to full screen on next frame
                     requestAnimationFrame(() => {
@@ -1028,9 +1143,7 @@
                 } else {
                     // Fallback if thumbnail not found
                     modal.classList.add('active');
-                    videoPlayer.play().catch(err => {
-                        console.log('Auto-play blocked:', err);
-                    });
+                    playAndCount(videoIndex);
                     
                     requestAnimationFrame(() => {
                         if (videoPlayer.requestFullscreen) {
@@ -1081,7 +1194,7 @@
             overlay.onclick = () => {
                 overlay.remove();
                 videoPlayer.style.display = 'block';
-                videoPlayer.play();
+                playAndCount(videoIndex);
                 
                 // Request fullscreen only on desktop
                 if (!isMobile()) {
