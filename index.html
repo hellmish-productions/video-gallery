@@ -6,7 +6,7 @@
     <title>Hellmish Productions</title>
     <link rel="icon" type="image/jpeg" href="https://hellmish-productions.github.io/video-gallery/img/batman-icon.jpg">
     
-    <!-- Open Graph tags for sharing  -->
+    <!-- Open Graph tags for sharing -->
     <meta property="og:title" content="Hellmish Productions">
     <meta property="og:description" content="Come see Batman as you've never dreamed!! And some other cool stuff as well...">
     <meta property="og:image" content="https://hellmish-productions.github.io/video-gallery/img/hellmish-productions-logo.jpg">
@@ -48,6 +48,8 @@
             margin: 0 auto;
             margin-top: calc(min(800px, 100vw) * -0.125);
             padding: 0 20px;
+            position: relative;
+            z-index: 1;
         }
         
         .banner-wrapper {
@@ -101,7 +103,7 @@
             height: auto;
             display: block;
             position: relative;
-            z-index: 1;
+            z-index: 0;
             margin: 0 auto;
         }
 
@@ -339,14 +341,8 @@
                 display: none;
             }
             
-            .banner {
-                z-index: 0;
-            }
-            
             .container {
                 margin-top: -50px;
-                position: relative;
-                z-index: 1;
             }
             
             h2 {
@@ -512,7 +508,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.33</div>
+    <div class="version">v1.34</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -1442,5 +1438,3 @@
     </script>
 </body>
 </html>
-
-
