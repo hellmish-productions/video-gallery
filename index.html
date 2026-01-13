@@ -150,11 +150,13 @@
             border: none;
             color: #aaa;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 4px;
             border-radius: 4px;
             font-size: 14px;
             transition: all 0.2s;
             display: none;
+            align-items: center;
+            justify-content: center;
         }
         
         .copy-btn-desktop:hover {
@@ -170,7 +172,7 @@
         /* Show copy button only on desktop (min-width: 769px) */
         @media (min-width: 769px) {
             .copy-btn-desktop {
-                display: block;
+                display: flex;
             }
         }
 
@@ -185,7 +187,7 @@
             font-size: 14px;
             color: #888;
             margin-right: 0px;
-            margin-left: 8px;
+            margin-left: 12px;
             display: flex;
             align-items: center;
             gap: 4px;
@@ -193,13 +195,9 @@
         
         .view-count svg {
             flex-shrink: 0;
-            position: relative;
-            top: -2px;
         }
         
         .view-count-number {
-            position: relative;
-            top: -2px;
         }
         
         .video-duration {
@@ -218,12 +216,13 @@
             border: none;
             color: #aaa;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 4px;
             border-radius: 4px;
             font-size: 14px;
             transition: all 0.2s;
             display: none;
             align-items: center;
+            justify-content: center;
             gap: 4px;
             flex-shrink: 0;
         }
@@ -231,6 +230,27 @@
         .share-btn:hover {
             background: #272727;
             color: #3ea6ff;
+        }
+        
+        .youtube-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        
+        .youtube-btn:hover {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff0000;
         }
         
         .share-btn svg {
@@ -392,7 +412,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.29</div>
+    <div class="version">v1.30</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -566,7 +586,8 @@
                         thumbnail: `${SITE_URL}/v/${section}/${videoFolder}/thumbnail.jpg`,
                         url: "https://www.dropbox.com/scl/fi/zcdzkg6brgsau8siso8ti/MacBatman.mp4?rlkey=j3q2tbzdmtq9qp0jzuffo3pwk&st=maz3c19i&raw=1",
                         duration: "6:66",
-                        section: section
+                        section: section,
+                        youtube: videoFolder === 'video-1' ? 'https://youtu.be/2tkM13EVeG8?si=iE-fYQtg5340vYlw' : undefined
                     };
                 }
                 
@@ -785,12 +806,13 @@
                     <div class="video-title-row">
                         <div class="video-title">${video.title}</div>
                         <div class="action-buttons">
-                            <div class="view-count" data-video-id="${video.videoId}" style="display: none;">
+                            ${video.youtube ? `
+                            <button class="youtube-btn" onclick="window.open('${video.youtube}', '_blank'); event.stopPropagation();" title="Watch on YouTube">
                                 <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                                 </svg>
-                                <span class="view-count-number">0</span>
-                            </div>
+                            </button>
+                            ` : ''}
                             <button class="copy-btn-desktop" onclick="copyVideoLink(${startIndex + index}, event)" title="Copy Link">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -806,6 +828,12 @@
                                     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                                 </svg>
                             </button>
+                            <div class="view-count" data-video-id="${video.videoId}">
+                                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                                <span class="view-count-number">0</span>
+                            </div>
                         </div>
                     </div>
                     <div class="video-description">${video.description}</div>
@@ -824,21 +852,20 @@
             const viewCountNumber = viewCountElement ? viewCountElement.querySelector('.view-count-number') : null;
             
             if (!firebaseReady || !viewCountNumber) {
-                // Firebase not ready - keep hidden
+                // Firebase not ready - keep showing 0
                 return;
             }
             
             try {
                 firebase.database().ref(`views/${videoId}`).on('value', (snapshot) => {
                     const count = snapshot.val() || 0;
-                    if (viewCountNumber && viewCountElement) {
+                    if (viewCountNumber) {
                         viewCountNumber.textContent = count.toLocaleString();
-                        viewCountElement.style.display = 'flex';
                     }
                 });
             } catch (error) {
                 console.error('Failed to load view count:', error);
-                // Keep hidden on error
+                // Keep showing 0 on error
             }
         }
 
@@ -1315,4 +1342,3 @@
     </script>
 </body>
 </html>
-
