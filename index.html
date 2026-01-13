@@ -412,7 +412,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.30</div>
+    <div class="version">v1.31</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -483,6 +483,7 @@
         const videoTitleOverlay = document.getElementById('videoTitleOverlay');
         
         let isAnimating = false; // Flag to track if modal is animating
+        let fullscreenExiting = false; // Flag to track if fullscreen is exiting
         
         // Play video and increment view count
         function playAndCount(videoIndex) {
@@ -546,8 +547,9 @@
             }
             // Swipe down - exit fullscreen OR close modal
             else if (swipeDistance < -swipeThreshold) {
-                if (document.fullscreenElement) {
+                if (document.fullscreenElement && !fullscreenExiting) {
                     // In fullscreen - exit fullscreen
+                    fullscreenExiting = true;
                     if (document.exitFullscreen) {
                         document.exitFullscreen();
                     } else if (document.webkitExitFullscreen) {
@@ -555,7 +557,11 @@
                     } else if (document.mozCancelFullScreen) {
                         document.mozCancelFullScreen();
                     }
-                } else {
+                    // Clear flag after browser finishes exiting
+                    setTimeout(() => {
+                        fullscreenExiting = false;
+                    }, 500);
+                } else if (!document.fullscreenElement && !fullscreenExiting) {
                     // Not in fullscreen - close modal
                     closeModal();
                 }
