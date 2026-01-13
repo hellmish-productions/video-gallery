@@ -63,6 +63,26 @@
             margin: 30px 0 20px 0;
             font-size: 24px;
             font-family: 'Batman Forever', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        
+        h2 img {
+            height: 2.5em; /* 2.5 times the text height */
+            padding: 0;
+            margin: 0;
+            margin-right: -20px; /* Move image 20px to the left */
+        }
+        
+        h2 {
+            padding-left: 0;
+        }
+        
+        h2 > :first-child {
+            margin-left: -20px; /* Move text 20px to the left (overlapping with image) */
         }
         
         .section-title {
@@ -412,7 +432,7 @@
         <!-- Sections will be dynamically generated here -->
     </div>
 
-    <div class="version">v1.31</div>
+    <div class="version">v1.32</div>
 
     <div class="modal" id="modal">
         <div class="modal-content">
@@ -483,7 +503,6 @@
         const videoTitleOverlay = document.getElementById('videoTitleOverlay');
         
         let isAnimating = false; // Flag to track if modal is animating
-        let fullscreenExiting = false; // Flag to track if fullscreen is exiting
         
         // Play video and increment view count
         function playAndCount(videoIndex) {
@@ -547,9 +566,8 @@
             }
             // Swipe down - exit fullscreen OR close modal
             else if (swipeDistance < -swipeThreshold) {
-                if (document.fullscreenElement && !fullscreenExiting) {
+                if (document.fullscreenElement) {
                     // In fullscreen - exit fullscreen
-                    fullscreenExiting = true;
                     if (document.exitFullscreen) {
                         document.exitFullscreen();
                     } else if (document.webkitExitFullscreen) {
@@ -557,11 +575,7 @@
                     } else if (document.mozCancelFullScreen) {
                         document.mozCancelFullScreen();
                     }
-                    // Clear flag after browser finishes exiting
-                    setTimeout(() => {
-                        fullscreenExiting = false;
-                    }, 500);
-                } else if (!document.fullscreenElement && !fullscreenExiting) {
+                } else {
                     // Not in fullscreen - close modal
                     closeModal();
                 }
@@ -739,9 +753,9 @@
                     const title = sectionTitles[sectionKey] || 
                                 sectionKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                     
-                    // Create section header
+                    // Create section header with Batman splash
                     const header = document.createElement('h2');
-                    header.textContent = title;
+                    header.innerHTML = `${title} <img src="${SITE_URL}/img/batman-splash.jpg" alt="">`;
                     container.appendChild(header);
                     
                     // Create grid
